@@ -102,28 +102,31 @@ export default function App() {
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const MONTHS = [
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'
+  ];
+  
+  const formatDateTime = (dt?: string) => {
+  if (!dt) return '';
+  const [datePart, timePart = '00:00'] = dt.split('T');
+  const [year, mo, da] = datePart.split('-').map(Number);
+  let [h, m] = timePart.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
+};
 
-  const formatDateTime = (dt?: string) => dt
-    ? new Intl.DateTimeFormat('en-US', {
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short',
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: '2-digit',
-        timeZone: 'America/New_York', 
-        hour12: true
-      }).format(new Date(dt)) + ' (EDT)'
-    : '';
+  
 
-  const formatDate = (d?: string) => d
-    ? new Intl.DateTimeFormat('en-US', {
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        timeZone: 'America/New_York'
-      }).format(new Date(d))
-    : '';
+  const formatDate = (d?: string) => {
+    if (!d) return '';
+    const [year, month, day] = d.split('T')[0].split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${monthNames[parseInt(month, 10) - 1]} ${parseInt(day, 10)}, ${year}`;
+  };
+    
 
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {

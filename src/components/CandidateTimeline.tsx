@@ -198,21 +198,21 @@ export default function CandidateTimeline({
                     )}
                   </div>
 
-                  {/* Contact Info */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
+                  {/* Contact Info - Now stacked vertically */}
+                  <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
                     <button
                       onClick={() => copyToClipboard(candidate.email)}
-                      className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 w-full"
                     >
-                      <Mail className="h-4 w-4" />
+                      <Mail className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{candidate.email}</span>
                     </button>
                     <button
                       onClick={() => copyToClipboard(candidate.phone)}
-                      className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 w-full"
                     >
-                      <Phone className="h-4 w-4" />
-                      <span>{candidate.phone}</span>
+                      <Phone className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{candidate.phone}</span>
                     </button>
                   </div>
 
