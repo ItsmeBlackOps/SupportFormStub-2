@@ -151,7 +151,7 @@ export function DetailModal({
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl 
-                    transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
@@ -181,8 +181,8 @@ export function DetailModal({
           </div>
           
           {/* Details Table */}
-          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="flex items-start space-x-2">
+          <div className="px-6 py-4 max-h-[calc(100vh-16rem)] overflow-y-auto">
+            <div className="flex items-start space-x-4">
               <button
                 onClick={copyTableFormat}
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 mt-1"
@@ -194,14 +194,14 @@ export function DetailModal({
                   <Copy className="h-4 w-4 text-gray-400" />
                 )}
               </button>
-              <table className="w-auto border-collapse border border-black text-black border-spacing-0">
+              <table className="w-full border-collapse border border-black text-black border-spacing-0">
                 <tbody>
                   {rows.map(({ label, value }) => (
                     <tr key={label} className="border-b border-black">
-                      <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
+                      <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
                         {label}
                       </td>
-                      <td className="border border-black p-1 leading-none whitespace-nowrap">
+                      <td className="border border-black p-2 leading-relaxed whitespace-nowrap">
                         {value || '-'}
                       </td>
                     </tr>
