@@ -51,7 +51,7 @@ export default function CandidateFormContainer({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Add New Candidate
+              {isEditing ? 'Update Candidate' : 'Add New Candidate'}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               {TASK_TYPE_LABELS[formData.taskType]} details
@@ -399,7 +399,7 @@ export default function CandidateFormContainer({
           >
             <Save className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
             <span className="group-hover:translate-x-0.5 transition-transform duration-200">
-              Save Candidate
+              {isEditing ? 'Update Candidate' : 'Save Candidate'}
             </span>
           </button>
         </div>

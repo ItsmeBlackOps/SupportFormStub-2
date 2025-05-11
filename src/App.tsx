@@ -156,7 +156,7 @@ export default function App() {
           activeTab={activeTab} 
           onChange={setActiveTab}
           tabs={[
-            { id: 'new', label: 'Add Candidate', icon: Plus },
+            { id: 'new', label: editingCandidate ? 'Edit Candidate' : 'Add Candidate', icon: Plus },
             { id: 'scheduled', label: 'Scheduled', icon: CalendarClock, 
               badge: candidates.length > 0 ? candidates.length : undefined 
             }
