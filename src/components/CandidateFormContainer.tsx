@@ -21,25 +21,19 @@ export default function CandidateFormContainer({
   onSubmit,
   isEditing
 }: CandidateFormProps) {
-  // Helper to update form fields
   const updateField = (field: keyof FormData, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
   
-  // Update task type while preserving common fields and client company
   const handleTaskTypeChange = (taskType: string) => {
     setFormData({
-      // Preserve common fields
       name: formData.name,
       gender: formData.gender,
       technology: formData.technology,
       email: formData.email,
       phone: formData.phone,
-      // Preserve client company if the new task type supports it
       endClient: ['interview', 'assessment', 'mock'].includes(taskType) ? formData.endClient : '',
-      // Set new task type
       taskType: taskType as any,
-      // Reset task-specific fields
       jobTitle: '',
       interviewRound: '',
       interviewDateTime: '',
@@ -57,7 +51,7 @@ export default function CandidateFormContainer({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              {isEditing ? 'Update Candidate' : 'Add New Candidate'}
+              Add New Candidate
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               {TASK_TYPE_LABELS[formData.taskType]} details
@@ -73,7 +67,6 @@ export default function CandidateFormContainer({
       
       <form onSubmit={onSubmit} className="p-6">
         <div className="space-y-8">
-          {/* Task Type Selection */}
           <FormSection title="Task Type">
             <TaskTypeSelector 
               value={formData.taskType}
@@ -81,7 +74,6 @@ export default function CandidateFormContainer({
             />
           </FormSection>
           
-          {/* Basic Information */}
           <FormSection title="Candidate Information">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <AutocompleteInput
@@ -147,7 +139,6 @@ export default function CandidateFormContainer({
                 required
               />
 
-              {/* End Client (only for interview, assessment, mock) */}
               {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
                 <div>
                   <label htmlFor="endClient" className="block text-sm font-medium text-gray-700">
@@ -168,7 +159,6 @@ export default function CandidateFormContainer({
             </div>
           </FormSection>
           
-          {/* Task Type Specific Fields */}
           {formData.taskType === 'interview' && (
             <FormSection title="Interview Details">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -409,7 +399,7 @@ export default function CandidateFormContainer({
           >
             <Save className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
             <span className="group-hover:translate-x-0.5 transition-transform duration-200">
-              {isEditing ? 'Update Candidate' : 'Save Candidate'}
+              Save Candidate
             </span>
           </button>
         </div>
