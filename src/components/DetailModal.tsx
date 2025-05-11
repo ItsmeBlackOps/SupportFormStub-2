@@ -51,7 +51,6 @@ export function DetailModal({
     { label: 'Technology', value: candidate.technology },
   ];
 
-  // Add fields based on task type
   if (['interview', 'assessment', 'mock'].includes(candidate.taskType)) {
     rows.push({ label: 'End Client', value: candidate.endClient || '' });
   }
@@ -89,7 +88,6 @@ export function DetailModal({
       break;
   }
 
-  // Add contact info at the end
   rows.push(
     { label: 'Email ID', value: candidate.email },
     { label: 'Contact Number', value: candidate.phone }
@@ -144,12 +142,7 @@ export function DetailModal({
 
   const copySubjectFormat = () => {
     const tempDiv = document.createElement('div');
-    const content = rows
-      .map(({ label, value }) => `${label}: ${value || '-'}`)
-      .join('\n');
-    
-    tempDiv.style.whiteSpace = 'pre';
-    tempDiv.textContent = content;
+    tempDiv.textContent = getTitle();
     document.body.appendChild(tempDiv);
 
     const range = document.createRange();
@@ -173,16 +166,27 @@ export function DetailModal({
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
-        <div 
-          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl 
-                    transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-        >
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl 
+                    transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
-              <h3 className="text-lg font-medium text-gray-900" id="modal-title">
-                {getTitle()}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {getTitle()}
+                </h3>
+                <button
+                  onClick={copySubjectFormat}
+                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Copy Subject"
+                >
+                  {copySuccess === 'subject' ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500 focus:outline-none"
@@ -194,6 +198,22 @@ export function DetailModal({
           
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                onClick={copyTableFormat}
+                className="px-3 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
+                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
+                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
+                          flex items-center gap-2"
+              >
+                {copySuccess === 'table' ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                Copy Table
+              </button>
+            </div>
             <table className="w-auto border-collapse border border-black text-black border-spacing-0">
               <tbody>
                 {rows.map(({ label, value }) => (
@@ -211,37 +231,7 @@ export function DetailModal({
           </div>
           
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between">
-            <div className="flex gap-2">
-              <button
-                onClick={copyTableFormat}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
-                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
-                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
-                          flex items-center gap-2"
-              >
-                {copySuccess === 'table' ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                Copy Table
-              </button>
-              <button
-                onClick={copySubjectFormat}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
-                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
-                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
-                          flex items-center gap-2"
-              >
-                {copySuccess === 'subject' ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                Copy Text
-              </button>
-            </div>
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
             <button
               onClick={onClose}
               className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
