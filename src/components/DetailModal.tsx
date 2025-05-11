@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Copy, Check } from 'lucide-react';
 import { Candidate } from '../types';
 
 interface DetailModalProps {
@@ -7,6 +7,8 @@ interface DetailModalProps {
   onClose: () => void;
   formatDateTime: (dateTime?: string) => string;
   formatDate: (date?: string) => string;
+  title?: string;
+  subtitle?: string;
 }
 
 export function DetailModal({
@@ -14,7 +16,11 @@ export function DetailModal({
   onClose,
   formatDateTime,
   formatDate,
+  title,
+  subtitle,
 }: DetailModalProps) {
+  const [copySuccess, setCopySuccess] = React.useState<'table' | 'subject' | null>(null);
+
   // Helper to capitalize first letter of each word
   const capitalizeWords = (str: string) => {
     return str.split(' ')
@@ -105,6 +111,76 @@ export function DetailModal({
     { label: 'Contact Number', value: candidate.phone }
   );
 
+  const copyTableFormat = () => {
+    // Create a temporary div for the table
+    const tempDiv = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.borderCollapse = 'collapse';
+    table.style.width = '100%';
+
+    rows.forEach(({ label, value }) => {
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td');
+      const td2 = document.createElement('td');
+
+      td1.style.border = '1px solid black';
+      td2.style.border = '1px solid black';
+      td1.style.padding = '8px';
+      td2.style.padding = '8px';
+      td1.style.fontWeight = 'bold';
+
+      td1.textContent = label;
+      td2.textContent = value || '-';
+
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      table.appendChild(tr);
+    });
+
+    tempDiv.appendChild(table);
+    document.body.appendChild(tempDiv);
+
+    // Select and copy
+    const range = document.createRange();
+    range.selectNode(tempDiv);
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand('copy');
+      selection.removeAllRanges();
+    }
+
+    document.body.removeChild(tempDiv);
+    setCopySuccess('table');
+    setTimeout(() => setCopySuccess(null), 2000);
+  };
+
+  const copySubjectFormat = () => {
+    // Create a temporary div for the subject format
+    const tempDiv = document.createElement('div');
+    const content = rows.map(({ label, value }) => `${label}: ${value || '-'}`).join('\n');
+    tempDiv.style.whiteSpace = 'pre';
+    tempDiv.textContent = content;
+
+    document.body.appendChild(tempDiv);
+
+    // Select and copy
+    const range = document.createRange();
+    range.selectNode(tempDiv);
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand('copy');
+      selection.removeAllRanges();
+    }
+
+    document.body.removeChild(tempDiv);
+    setCopySuccess('subject');
+    setTimeout(() => setCopySuccess(null), 2000);
+  };
+
   return (
     <div className="fixed inset-0 overflow-y-auto z-50 animate-fadeIn">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -119,7 +195,7 @@ export function DetailModal({
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
               <h3 className="text-lg font-medium text-gray-900" id="modal-title">
-                {getTitle()}
+                {title || getTitle()}
               </h3>
               <button
                 onClick={onClose}
@@ -128,6 +204,9 @@ export function DetailModal({
                 <X className="h-5 w-5" />
               </button>
             </div>
+            {subtitle && (
+              <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+            )}
           </div>
           
           {/* Details Table */}
@@ -149,9 +228,38 @@ export function DetailModal({
           </div>
           
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between">
+            <div className="flex gap-2">
+              <button
+                onClick={copyTableFormat}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
+                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
+                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
+                          flex items-center gap-2"
+              >
+                {copySuccess === 'table' ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                Copy Table
+              </button>
+              <button
+                onClick={copySubjectFormat}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
+                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
+                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
+                          flex items-center gap-2"
+              >
+                {copySuccess === 'subject' ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                Copy Text
+              </button>
+            </div>
             <button
-              type="button"
               onClick={onClose}
               className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
                         font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
