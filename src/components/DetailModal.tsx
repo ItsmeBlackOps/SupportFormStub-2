@@ -7,8 +7,6 @@ interface DetailModalProps {
   onClose: () => void;
   formatDateTime: (dateTime?: string) => string;
   formatDate: (date?: string) => string;
-  title?: string;
-  subtitle?: string;
 }
 
 export function DetailModal({
@@ -16,8 +14,6 @@ export function DetailModal({
   onClose,
   formatDateTime,
   formatDate,
-  title,
-  subtitle,
 }: DetailModalProps) {
   const [copySuccess, setCopySuccess] = React.useState<'table' | 'subject' | null>(null);
 
@@ -185,7 +181,7 @@ export function DetailModal({
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
               <h3 className="text-lg font-medium text-gray-900" id="modal-title">
-                {title || getTitle()}
+                {getTitle()}
               </h3>
               <button
                 onClick={onClose}
@@ -194,9 +190,6 @@ export function DetailModal({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            {subtitle && (
-              <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
-            )}
           </div>
           
           {/* Details Table */}
