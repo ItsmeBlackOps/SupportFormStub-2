@@ -182,24 +182,24 @@ export function DetailModal({
           
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="mb-4">
-              <button
-                onClick={copyTableFormat}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                title="Copy Table"
-              >
-                {copySuccess === 'table' ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4 text-gray-400" />
-                )}
-              </button>
-            </div>
             <table className="w-auto border-collapse border border-black text-black border-spacing-0">
               <tbody>
-                {rows.map(({ label, value }) => (
+                {rows.map(({ label, value }, index) => (
                   <tr key={label} className="border-b border-black">
                     <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
+                      {index === 0 && (
+                        <button
+                          onClick={copyTableFormat}
+                          className="inline-flex p-1.5 hover:bg-gray-100 rounded-full transition-colors mr-2"
+                          title="Copy Table"
+                        >
+                          {copySuccess === 'table' ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                      )}
                       {label}
                     </td>
                     <td className="border border-black p-1 leading-none whitespace-nowrap">
