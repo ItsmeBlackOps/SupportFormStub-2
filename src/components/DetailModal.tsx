@@ -128,6 +128,8 @@ export function DetailModal({
       td1.style.padding = '8px';
       td2.style.padding = '8px';
       td1.style.fontWeight = 'bold';
+      td1.style.whiteSpace = 'nowrap';
+      td1.style.width = '1%'; // This makes the column auto-fit to content
 
       td1.textContent = label;
       td2.textContent = value || '-';
@@ -215,7 +217,7 @@ export function DetailModal({
               <tbody>
                 {rows.map(({ label, value }) => (
                   <tr key={label} className="border-b border-black">
-                    <td className="border border-black p-1 leading-none font-semibold">
+                    <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
                       {label}
                     </td>
                     <td className="border border-black p-1 leading-none">
