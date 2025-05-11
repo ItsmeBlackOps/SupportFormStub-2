@@ -183,6 +183,7 @@ export function DetailModal({
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
             <div className="mb-4">
+            </div>
               <button
                 onClick={copyTableFormat}
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
@@ -194,7 +195,6 @@ export function DetailModal({
                   <Copy className="h-4 w-4 text-gray-400" />
                 )}
               </button>
-            </div>
             <table className="w-auto border-collapse border border-black text-black border-spacing-0">
               <tbody>
                 {rows.map(({ label, value }) => (
