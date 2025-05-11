@@ -51,6 +51,7 @@ export function DetailModal({
     { label: 'Technology', value: candidate.technology },
   ];
 
+  // Add fields based on task type
   if (['interview', 'assessment', 'mock'].includes(candidate.taskType)) {
     rows.push({ label: 'End Client', value: candidate.endClient || '' });
   }
@@ -88,6 +89,7 @@ export function DetailModal({
       break;
   }
 
+  // Add contact info at the end
   rows.push(
     { label: 'Email ID', value: candidate.email },
     { label: 'Contact Number', value: candidate.phone }
