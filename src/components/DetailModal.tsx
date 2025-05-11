@@ -50,28 +50,28 @@ export function DetailModal({
   };
 
   const rows: { label: string; value: string }[] = [
-    { label: 'Name', value: capitalizeWords(candidate.name) },
+    { label: 'Candidate Name', value: capitalizeWords(candidate.name) },
     { label: 'Gender', value: candidate.gender },
     { label: 'Technology', value: candidate.technology },
   ];
 
   // Add fields based on task type
   if (['interview', 'assessment', 'mock'].includes(candidate.taskType)) {
-    rows.push({ label: 'Client', value: candidate.endClient || '' });
+    rows.push({ label: 'End Client', value: candidate.endClient || '' });
   }
 
   switch (candidate.taskType) {
     case 'interview':
       rows.push(
-        { label: 'Role', value: candidate.jobTitle || '' },
-        { label: 'Round', value: candidate.interviewRound || '' },
-        { label: 'Schedule', value: formatDateTime(candidate.interviewDateTime) },
+        { label: 'Job Title in JD', value: candidate.jobTitle || '' },
+        { label: 'Interview Round', value: candidate.interviewRound || '' },
+        { label: 'Date and Time of Interview (EST)', value: formatDateTime(candidate.interviewDateTime) },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
       break;
     case 'assessment':
       rows.push(
-        { label: 'Deadline', value: formatDate(candidate.assessmentDeadline) },
+        { label: 'Assessment Deadline', value: formatDate(candidate.assessmentDeadline) },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
       break;
@@ -95,8 +95,8 @@ export function DetailModal({
 
   // Add contact info at the end
   rows.push(
-    { label: 'Email', value: candidate.email },
-    { label: 'Phone', value: candidate.phone }
+    { label: 'Email ID', value: candidate.email },
+    { label: 'Contact Number', value: candidate.phone }
   );
 
   const copyTableFormat = () => {
