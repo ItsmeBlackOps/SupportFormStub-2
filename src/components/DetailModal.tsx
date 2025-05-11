@@ -104,7 +104,6 @@ export function DetailModal({
       const td1 = document.createElement('td');
       const td2 = document.createElement('td');
 
-      // Style both cells for auto-fit
       [td1, td2].forEach(td => {
         td.style.border = '1px solid black';
         td.style.padding = '8px';
@@ -113,7 +112,6 @@ export function DetailModal({
       });
 
       td1.style.fontWeight = 'bold';
-      
       td1.textContent = label;
       td2.textContent = value || '-';
 
@@ -141,21 +139,7 @@ export function DetailModal({
   };
 
   const copySubjectFormat = () => {
-    const tempDiv = document.createElement('div');
-    tempDiv.textContent = getTitle();
-    document.body.appendChild(tempDiv);
-
-    const range = document.createRange();
-    range.selectNode(tempDiv);
-    const selection = window.getSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-      document.execCommand('copy');
-      selection.removeAllRanges();
-    }
-
-    document.body.removeChild(tempDiv);
+    navigator.clipboard.writeText(getTitle());
     setCopySuccess('subject');
     setTimeout(() => setCopySuccess(null), 2000);
   };
@@ -171,21 +155,21 @@ export function DetailModal({
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {getTitle()}
-                </h3>
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={copySubjectFormat}
-                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
                   title="Copy Subject"
                 >
                   {copySuccess === 'subject' ? (
                     <Check className="h-4 w-4 text-green-500" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-4 w-4 text-gray-400" />
                   )}
                 </button>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {getTitle()}
+                </h3>
               </div>
               <button
                 onClick={onClose}
@@ -198,20 +182,17 @@ export function DetailModal({
           
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="mb-4">
               <button
                 onClick={copyTableFormat}
-                className="px-3 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-sm 
-                          font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 
-                          focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150
-                          flex items-center gap-2"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                title="Copy Table"
               >
                 {copySuccess === 'table' ? (
                   <Check className="h-4 w-4 text-green-500" />
                 ) : (
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-4 w-4 text-gray-400" />
                 )}
-                Copy Table
               </button>
             </div>
             <table className="w-auto border-collapse border border-black text-black border-spacing-0">
