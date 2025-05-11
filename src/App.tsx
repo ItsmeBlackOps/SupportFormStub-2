@@ -101,16 +101,11 @@ export default function App() {
       updatedAt: new Date().toISOString()
     };
     
-    // Add the duplicate to the candidates list immediately
-    const updatedCandidates = [...candidates, duplicatedCandidate];
-    saveCandidates(updatedCandidates);
-    
-    // Set up form for editing the duplicate
     setFormData(duplicatedCandidate);
-    setEditingCandidate(duplicatedCandidate);
+    setEditingCandidate(null);
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Duplicated candidate - now editing', 'info');
+    showToast('Ready to edit duplicated candidate', 'info');
   };
 
   const MONTHS = [
