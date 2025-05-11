@@ -112,6 +112,7 @@ export function DetailModal({
   );
 
   const copyTableFormat = () => {
+    // Create a temporary div for the table
     const tempDiv = document.createElement('div');
     const table = document.createElement('table');
     table.style.borderCollapse = 'collapse';
@@ -122,18 +123,13 @@ export function DetailModal({
       const td1 = document.createElement('td');
       const td2 = document.createElement('td');
 
-      // First column styles
       td1.style.border = '1px solid black';
+      td2.style.border = '1px solid black';
       td1.style.padding = '8px';
+      td2.style.padding = '8px';
       td1.style.fontWeight = 'bold';
       td1.style.whiteSpace = 'nowrap';
-      td1.style.width = '1%';
-
-      // Second column styles
-      td2.style.border = '1px solid black';
-      td2.style.padding = '8px';
-      td2.style.whiteSpace = 'normal';
-      td2.style.width = 'auto';
+      td1.style.width = '1%'; // This makes the column auto-fit to content
 
       td1.textContent = label;
       td2.textContent = value || '-';
@@ -146,6 +142,7 @@ export function DetailModal({
     tempDiv.appendChild(table);
     document.body.appendChild(tempDiv);
 
+    // Select and copy
     const range = document.createRange();
     range.selectNode(tempDiv);
     const selection = window.getSelection();
@@ -162,6 +159,7 @@ export function DetailModal({
   };
 
   const copySubjectFormat = () => {
+    // Create a temporary div for the subject format
     const tempDiv = document.createElement('div');
     const content = rows.map(({ label, value }) => `${label}: ${value || '-'}`).join('\n');
     tempDiv.style.whiteSpace = 'pre';
@@ -169,6 +167,7 @@ export function DetailModal({
 
     document.body.appendChild(tempDiv);
 
+    // Select and copy
     const range = document.createRange();
     range.selectNode(tempDiv);
     const selection = window.getSelection();
@@ -218,10 +217,10 @@ export function DetailModal({
               <tbody>
                 {rows.map(({ label, value }) => (
                   <tr key={label} className="border-b border-black">
-                    <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap w-[1%]">
+                    <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
                       {label}
                     </td>
-                    <td className="border border-black p-1 leading-none break-words">
+                    <td className="border border-black p-1 leading-none">
                       {value || '-'}
                     </td>
                   </tr>
