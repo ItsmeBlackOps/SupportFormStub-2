@@ -151,7 +151,7 @@ export function DetailModal({
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl 
-                    transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                    transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
@@ -181,7 +181,7 @@ export function DetailModal({
           </div>
           
           {/* Details Table */}
-          <div className="px-6 py-4 max-h-[calc(100vh-16rem)] overflow-y-auto">
+          <div className="p-6">
             <div className="flex items-start space-x-4">
               <button
                 onClick={copyTableFormat}
@@ -198,10 +198,10 @@ export function DetailModal({
                 <tbody>
                   {rows.map(({ label, value }) => (
                     <tr key={label} className="border-b border-black">
-                      <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
+                      <td className="border border-black p-2 leading-relaxed font-semibold">
                         {label}
                       </td>
-                      <td className="border border-black p-2 leading-relaxed whitespace-nowrap">
+                      <td className="border border-black p-2 leading-relaxed">
                         {value || '-'}
                       </td>
                     </tr>

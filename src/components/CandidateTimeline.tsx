@@ -12,7 +12,8 @@ import {
   ClipboardCheckIcon,
   Copy,
   Mail,
-  Phone
+  Phone,
+  Check
 } from 'lucide-react';
 import { Candidate, TaskType } from '../types';
 import { TASK_TYPE_COLORS, TASK_TYPE_LABELS } from '../constants';
@@ -218,6 +219,9 @@ export default function CandidateTimeline({
                         >
                           <Mail className="h-4 w-4 mr-1.5" />
                           <span className="truncate">{candidate.email}</span>
+                          {copySuccess === `email-${candidate.id}` && (
+                            <Check className="h-4 w-4 text-green-500 ml-1" />
+                          )}
                         </button>
                         <button
                           onClick={() => copyToClipboard(candidate.phone, `phone-${candidate.id}`)}
@@ -225,6 +229,9 @@ export default function CandidateTimeline({
                         >
                           <Phone className="h-4 w-4 mr-1.5" />
                           <span className="truncate">{candidate.phone}</span>
+                          {copySuccess === `phone-${candidate.id}` && (
+                            <Check className="h-4 w-4 text-green-500 ml-1" />
+                          )}
                         </button>
                       </div>
                     </div>
