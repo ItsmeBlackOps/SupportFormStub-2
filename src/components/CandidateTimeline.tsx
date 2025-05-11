@@ -36,6 +36,8 @@ export default function CandidateTimeline({
   formatDateTime,
   formatDate,
 }: CandidateTimelineProps) {
+  const [copySuccess, setCopySuccess] = React.useState<string | null>(null);
+
   // Group candidates by type
   const candidatesByType: Record<TaskType, Candidate[]> = {
     interview: [],
@@ -96,9 +98,12 @@ export default function CandidateTimeline({
     onEdit(duplicatedCandidate);
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
-      .then(() => alert('Copied to clipboard'))
+      .then(() => {
+        setCopySuccess(id);
+        setTimeout(() => setCopySuccess(null), 2000);
+      })
       .catch(err => console.error('Failed to copy: ', err));
   };
 
@@ -131,121 +136,130 @@ export default function CandidateTimeline({
               </div>
             </div>
             
-            {/* Candidate Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+            {/* Candidate List */}
+            <div className="divide-y divide-gray-200">
               {typeData.map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={`relative rounded-lg border ${colors.border} p-4 hover:shadow-md transition-shadow duration-200`}
+                  className="p-4 hover:bg-gray-50 transition-colors duration-200"
                 >
-                  {/* Header */}
-                  <div className="mb-3">
-                    <h3 className="font-medium text-gray-900">
-                      {candidate.name}
-                    </h3>
-                  </div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => copyToClipboard(candidate.name, `name-${candidate.id}`)}
+                          className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                          title="Copy Name"
+                        >
+                          {copySuccess === `name-${candidate.id}` ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {candidate.name}
+                        </h3>
+                      </div>
 
-                  {/* Technology Badge */}
-                  <div className="mb-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
-                      {candidate.technology}
-                    </span>
-                  </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
+                          {candidate.technology}
+                        </span>
 
-                  {/* Details */}
-                  <div className="space-y-2 text-sm">
-                    {candidate.taskType === 'interview' && (
-                      <>
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {formatDateTime(candidate.interviewDateTime)}
-                        </div>
-                        {candidate.jobTitle && (
-                          <div className="flex items-center text-gray-600">
-                            <BriefcaseIcon className="h-4 w-4 mr-2" />
-                            {candidate.jobTitle}
+                        {candidate.taskType === 'interview' && (
+                          <>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Calendar className="h-4 w-4 mr-1.5" />
+                              {formatDateTime(candidate.interviewDateTime)}
+                            </div>
+                            {candidate.jobTitle && (
+                              <div className="flex items-center text-sm text-gray-500">
+                                <BriefcaseIcon className="h-4 w-4 mr-1.5" />
+                                {candidate.jobTitle}
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {candidate.taskType === 'assessment' && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            Due: {formatDate(candidate.assessmentDeadline)}
                           </div>
                         )}
-                      </>
-                    )}
 
-                    {candidate.taskType === 'assessment' && (
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Due: {formatDate(candidate.assessmentDeadline)}
+                        {['mock', 'resumeUnderstanding'].includes(candidate.taskType) && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            {formatDateTime(candidate.availabilityDateTime)}
+                          </div>
+                        )}
+
+                        {candidate.endClient && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Building2 className="h-4 w-4 mr-1.5" />
+                            {candidate.endClient}
+                          </div>
+                        )}
+
+                        {candidate.duration && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Clock className="h-4 w-4 mr-1.5" />
+                            {candidate.duration} minutes
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    {['mock', 'resumeUnderstanding'].includes(candidate.taskType) && (
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {formatDateTime(candidate.availabilityDateTime)}
+                      <div className="mt-2 flex items-center space-x-4">
+                        <button
+                          onClick={() => copyToClipboard(candidate.email, `email-${candidate.id}`)}
+                          className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          <Mail className="h-4 w-4 mr-1.5" />
+                          <span className="truncate">{candidate.email}</span>
+                        </button>
+                        <button
+                          onClick={() => copyToClipboard(candidate.phone, `phone-${candidate.id}`)}
+                          className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          <Phone className="h-4 w-4 mr-1.5" />
+                          <span className="truncate">{candidate.phone}</span>
+                        </button>
                       </div>
-                    )}
+                    </div>
 
-                    {candidate.endClient && (
-                      <div className="flex items-center text-gray-600">
-                        <Building2 className="h-4 w-4 mr-2" />
-                        {candidate.endClient}
-                      </div>
-                    )}
-
-                    {candidate.duration && (
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="h-4 w-4 mr-2" />
-                        {candidate.duration} minutes
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Contact Info - Now stacked vertically */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-                    <button
-                      onClick={() => copyToClipboard(candidate.email)}
-                      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 w-full"
-                    >
-                      <Mail className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{candidate.email}</span>
-                    </button>
-                    <button
-                      onClick={() => copyToClipboard(candidate.phone)}
-                      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 w-full"
-                    >
-                      <Phone className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{candidate.phone}</span>
-                    </button>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 grid grid-cols-4 gap-2">
-                    <button
-                      onClick={() => onView(candidate)}
-                      className="flex items-center justify-center p-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                      title="View Details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(candidate)}
-                      className="flex items-center justify-center p-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDuplicateAndEdit(candidate)}
-                      className="flex items-center justify-center p-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                      title="Duplicate & Edit"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(candidate.id)}
-                      className="flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-2 ml-4">
+                      <button
+                        onClick={() => onView(candidate)}
+                        className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+                        title="View Details"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => onEdit(candidate)}
+                        className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDuplicateAndEdit(candidate)}
+                        className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Duplicate & Edit"
+                      >
+                        <Copy className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(candidate.id)}
+                        className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
