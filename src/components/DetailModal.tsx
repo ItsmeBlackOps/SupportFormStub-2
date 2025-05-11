@@ -50,87 +50,76 @@ export function DetailModal({
   };
 
   const rows: { label: string; value: string }[] = [
-    { label: 'Candidate Name', value: capitalizeWords(candidate.name) },
+    { label: 'Name', value: capitalizeWords(candidate.name) },
     { label: 'Gender', value: candidate.gender },
     { label: 'Technology', value: candidate.technology },
   ];
 
   // Add fields based on task type
   if (['interview', 'assessment', 'mock'].includes(candidate.taskType)) {
-    rows.push({ label: 'End Client', value: candidate.endClient || '' });
+    rows.push({ label: 'Client', value: candidate.endClient || '' });
   }
 
   switch (candidate.taskType) {
     case 'interview':
       rows.push(
-        { label: 'Job Title in JD', value: candidate.jobTitle || '' },
-        { label: 'Interview Round', value: candidate.interviewRound || '' },
-        {
-          label: 'Date and Time of Interview (EST)',
-          value: formatDateTime(candidate.interviewDateTime),
-        },
+        { label: 'Role', value: candidate.jobTitle || '' },
+        { label: 'Round', value: candidate.interviewRound || '' },
+        { label: 'Schedule', value: formatDateTime(candidate.interviewDateTime) },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
       break;
     case 'assessment':
       rows.push(
-        {
-          label: 'Assessment Deadline',
-          value: formatDate(candidate.assessmentDeadline),
-        },
+        { label: 'Deadline', value: formatDate(candidate.assessmentDeadline) },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
       break;
     case 'mock':
       rows.push(
         { label: 'Mode', value: candidate.mockMode || '' },
-        {
-          label: 'Availability',
-          value: formatDateTime(candidate.availabilityDateTime),
-        },
-        { label: 'Remarks', value: candidate.remarks || '' }
+        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) },
+        { label: 'Notes', value: candidate.remarks || '' }
       );
       break;
     case 'resumeUnderstanding':
       rows.push(
-        {
-          label: 'Availability',
-          value: formatDateTime(candidate.availabilityDateTime),
-        },
-        { label: 'Remarks', value: candidate.remarks || '' }
+        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) },
+        { label: 'Notes', value: candidate.remarks || '' }
       );
       break;
     case 'resumeReview':
-      rows.push({ label: 'Remarks', value: candidate.remarks || '' });
+      rows.push({ label: 'Notes', value: candidate.remarks || '' });
       break;
   }
 
   // Add contact info at the end
   rows.push(
-    { label: 'Email ID', value: candidate.email },
-    { label: 'Contact Number', value: candidate.phone }
+    { label: 'Email', value: candidate.email },
+    { label: 'Phone', value: candidate.phone }
   );
 
   const copyTableFormat = () => {
-    // Create a temporary div for the table
     const tempDiv = document.createElement('div');
     const table = document.createElement('table');
     table.style.borderCollapse = 'collapse';
-    table.style.width = '100%';
+    table.style.width = 'auto';
 
     rows.forEach(({ label, value }) => {
       const tr = document.createElement('tr');
       const td1 = document.createElement('td');
       const td2 = document.createElement('td');
 
-      td1.style.border = '1px solid black';
-      td2.style.border = '1px solid black';
-      td1.style.padding = '8px';
-      td2.style.padding = '8px';
-      td1.style.fontWeight = 'bold';
-      td1.style.whiteSpace = 'nowrap';
-      td1.style.width = '1%'; // This makes the column auto-fit to content
+      // Style both cells for auto-fit
+      [td1, td2].forEach(td => {
+        td.style.border = '1px solid black';
+        td.style.padding = '8px';
+        td.style.whiteSpace = 'nowrap';
+        td.style.width = 'auto';
+      });
 
+      td1.style.fontWeight = 'bold';
+      
       td1.textContent = label;
       td2.textContent = value || '-';
 
@@ -142,7 +131,6 @@ export function DetailModal({
     tempDiv.appendChild(table);
     document.body.appendChild(tempDiv);
 
-    // Select and copy
     const range = document.createRange();
     range.selectNode(tempDiv);
     const selection = window.getSelection();
@@ -159,15 +147,15 @@ export function DetailModal({
   };
 
   const copySubjectFormat = () => {
-    // Create a temporary div for the subject format
     const tempDiv = document.createElement('div');
-    const content = rows.map(({ label, value }) => `${label}: ${value || '-'}`).join('\n');
+    const content = rows
+      .map(({ label, value }) => `${label}: ${value || '-'}`)
+      .join('\n');
+    
     tempDiv.style.whiteSpace = 'pre';
     tempDiv.textContent = content;
-
     document.body.appendChild(tempDiv);
 
-    // Select and copy
     const range = document.createRange();
     range.selectNode(tempDiv);
     const selection = window.getSelection();
@@ -213,14 +201,14 @@ export function DetailModal({
           
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <table className="min-w-full border-collapse border border-black text-black border-spacing-0">
+            <table className="w-auto border-collapse border border-black text-black border-spacing-0">
               <tbody>
                 {rows.map(({ label, value }) => (
                   <tr key={label} className="border-b border-black">
                     <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
                       {label}
                     </td>
-                    <td className="border border-black p-1 leading-none">
+                    <td className="border border-black p-1 leading-none whitespace-nowrap">
                       {value || '-'}
                     </td>
                   </tr>
