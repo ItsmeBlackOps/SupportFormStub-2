@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { UserRound, Plus, CalendarClock } from 'lucide-react';
+import { Plus, CalendarClock } from 'lucide-react';
 import CandidateFormContainer from './components/CandidateFormContainer';
 import CandidateTimeline from './components/CandidateTimeline';
 import { DetailModal } from './components/DetailModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { TabNavigation } from './components/TabNavigation';
 import { EmptyState } from './components/EmptyState';
-import { HeaderBar } from './components/HeaderBar';
 import { useToast } from './hooks/useToast';
 import { useImagePaste } from './hooks/useImagePaste';
 import { useAutocompleteData } from './hooks/useAutocompleteData';
@@ -26,7 +25,6 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
-  // Load candidates from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
     if (saved) {
@@ -39,7 +37,6 @@ export default function App() {
     }
   }, []);
 
-  // Register paste event handler
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
@@ -70,10 +67,9 @@ export default function App() {
     setShowSuccessModal(true);
     setEditingCandidate(null);
     
-    // Reset form after successful submission
     setFormData({
       ...INITIAL_FORM_DATA,
-      taskType: formData.taskType // maintain the selected task type
+      taskType: formData.taskType
     });
     
     showToast(
@@ -81,7 +77,6 @@ export default function App() {
       'success'
     );
     
-    // Switch to scheduled tab after submission
     setActiveTab('scheduled');
   };
 
@@ -102,31 +97,29 @@ export default function App() {
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
   const MONTHS = [
     'Jan','Feb','Mar','Apr','May','Jun',
     'Jul','Aug','Sep','Oct','Nov','Dec'
   ];
   
   const formatDateTime = (dt?: string) => {
-  if (!dt) return '';
-  const [datePart, timePart = '00:00'] = dt.split('T');
-  const [year, mo, da] = datePart.split('-').map(Number);
-  let [h, m] = timePart.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
-};
-
-  
+    if (!dt) return '';
+    const [datePart, timePart = '00:00'] = dt.split('T');
+    const [year, mo, da] = datePart.split('-').map(Number);
+    let [h, m] = timePart.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  };
 
   const formatDate = (d?: string) => {
     if (!d) return '';
     const [year, month, day] = d.split('T')[0].split('-');
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${monthNames[parseInt(month, 10) - 1]} ${parseInt(day, 10)}, ${year}`;
   };
-    
 
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {
@@ -147,9 +140,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderBar />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <TabNavigation 
           activeTab={activeTab} 
           onChange={setActiveTab}
@@ -161,7 +152,7 @@ export default function App() {
           ]}
         />
         
-        <div className="mt-6 transition-all duration-200">
+        <div className="mt-4 transition-all duration-200">
           {activeTab === 'new' && (
             <>
               {isAnalyzing && <LoadingOverlay />}
