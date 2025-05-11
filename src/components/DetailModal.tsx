@@ -180,9 +180,9 @@ export function DetailModal({
             </div>
           </div>
           
-          {/* Details Table */}
+          {/* Details View */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="mb-4">
+            <div className="flex items-center mb-4">
               <button
                 onClick={copyTableFormat}
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
@@ -195,20 +195,18 @@ export function DetailModal({
                 )}
               </button>
             </div>
-            <table className="w-auto border-collapse border border-black text-black border-spacing-0">
-              <tbody>
-                {rows.map(({ label, value }) => (
-                  <tr key={label} className="border-b border-black">
-                    <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
-                      {label}
-                    </td>
-                    <td className="border border-black p-1 leading-none whitespace-nowrap">
-                      {value || '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="space-y-2">
+              {rows.map(({ label, value }) => (
+                <div key={label} className="grid grid-cols-[auto,1fr] gap-4">
+                  <div className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                    {label}
+                  </div>
+                  <div className="text-sm text-gray-900 whitespace-nowrap">
+                    {value || '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           
           {/* Footer */}
