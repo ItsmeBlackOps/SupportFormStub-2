@@ -94,46 +94,11 @@ export function DetailModal({
   );
 
   const copyTableFormat = () => {
-    const tempDiv = document.createElement('div');
-    const table = document.createElement('table');
-    table.style.borderCollapse = 'collapse';
-    table.style.width = 'auto';
-
-    rows.forEach(({ label, value }) => {
-      const tr = document.createElement('tr');
-      const td1 = document.createElement('td');
-      const td2 = document.createElement('td');
-
-      [td1, td2].forEach(td => {
-        td.style.border = '1px solid black';
-        td.style.padding = '8px';
-        td.style.whiteSpace = 'nowrap';
-        td.style.width = 'auto';
-      });
-
-      td1.style.fontWeight = 'bold';
-      td1.textContent = label;
-      td2.textContent = value || '-';
-
-      tr.appendChild(td1);
-      tr.appendChild(td2);
-      table.appendChild(tr);
-    });
-
-    tempDiv.appendChild(table);
-    document.body.appendChild(tempDiv);
-
-    const range = document.createRange();
-    range.selectNode(tempDiv);
-    const selection = window.getSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-      document.execCommand('copy');
-      selection.removeAllRanges();
-    }
-
-    document.body.removeChild(tempDiv);
+    const tableText = rows
+      .map(({ label, value }) => `${label}\t${value || '-'}`)
+      .join('\n');
+    
+    navigator.clipboard.writeText(tableText);
     setCopySuccess('table');
     setTimeout(() => setCopySuccess(null), 2000);
   };
@@ -154,26 +119,24 @@ export function DetailModal({
                     transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center space-x-2">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={copySubjectFormat}
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                   title="Copy Subject"
                 >
                   {copySuccess === 'subject' ? (
                     <Check className="h-4 w-4 text-green-500" />
                   ) : (
-                    <Copy className="h-4 w-4 text-gray-400" />
+                    <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   )}
                 </button>
-                <h3 className="text-lg font-medium text-gray-900">
-                  {getTitle()}
-                </h3>
+                <h3 className="text-lg font-medium text-gray-900">{getTitle()}</h3>
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                className="p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -182,27 +145,27 @@ export function DetailModal({
           
           {/* Details Table */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="mb-4">
+            <div className="flex items-center mb-2">
               <button
                 onClick={copyTableFormat}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                title="Copy Table"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Copy Table Content"
               >
                 {copySuccess === 'table' ? (
                   <Check className="h-4 w-4 text-green-500" />
                 ) : (
-                  <Copy className="h-4 w-4 text-gray-400" />
+                  <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 )}
               </button>
             </div>
-            <table className="w-auto border-collapse border border-black text-black border-spacing-0">
+            <table className="min-w-full border-collapse border border-black">
               <tbody>
                 {rows.map(({ label, value }) => (
-                  <tr key={label} className="border-b border-black">
-                    <td className="border border-black p-1 leading-none font-semibold whitespace-nowrap">
+                  <tr key={label}>
+                    <td className="border border-black p-1 font-semibold whitespace-nowrap">
                       {label}
                     </td>
-                    <td className="border border-black p-1 leading-none whitespace-nowrap">
+                    <td className="border border-black p-1 whitespace-nowrap">
                       {value || '-'}
                     </td>
                   </tr>
