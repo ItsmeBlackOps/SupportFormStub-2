@@ -66,15 +66,13 @@ export default function App() {
     setSubmittedCandidate(newCandidate);
     setShowSuccessModal(true);
     setEditingCandidate(null);
-    
     setFormData(INITIAL_FORM_DATA);
+    setActiveTab('scheduled');
     
     showToast(
       editingCandidate ? 'Candidate updated successfully' : 'New candidate added successfully',
       'success'
     );
-    
-    setActiveTab('scheduled');
   };
 
   const handleDelete = (id: string) => {
