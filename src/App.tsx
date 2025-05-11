@@ -101,11 +101,12 @@ export default function App() {
       updatedAt: new Date().toISOString()
     };
     
+    saveCandidates([...candidates, duplicatedCandidate]);
     setFormData(duplicatedCandidate);
     setEditingCandidate(null);
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Ready to edit duplicated candidate', 'info');
+    showToast('Duplicated candidate - now edit and save as new', 'info');
   };
 
   const MONTHS = [
@@ -214,7 +215,6 @@ export default function App() {
         <DetailModal
           candidate={submittedCandidate}
           title={getModalTitle(submittedCandidate)}
-          subtitle={`${submittedCandidate.name} - ${submittedCandidate.technology}`}
           onClose={() => setShowSuccessModal(false)}
           formatDateTime={formatDateTime}
           formatDate={formatDate}
@@ -225,7 +225,6 @@ export default function App() {
         <DetailModal
           candidate={viewingCandidate}
           title={getModalTitle(viewingCandidate)}
-          subtitle={`${viewingCandidate.name} - ${viewingCandidate.technology}`}
           onClose={() => setViewingCandidate(null)}
           formatDateTime={formatDateTime}
           formatDate={formatDate}
