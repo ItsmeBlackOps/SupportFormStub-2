@@ -25,6 +25,27 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
+  // Date formatting functions
+  const formatDateTime = (dateTime?: string) => {
+    if (!dateTime) return '';
+    return new Date(dateTime).toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatDate = (date?: string) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
@@ -116,8 +137,6 @@ export default function App() {
     showToast('Duplicated candidate — now edit and save as new', 'info');
   };
 
-  // (Your existing date‐formatters and getModalTitle go here…)
-
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -173,7 +192,8 @@ export default function App() {
                   onDuplicate={handleDuplicate}
                   menuOpenId={menuOpenId}
                   setMenuOpenId={setMenuOpenId}
-                  /* pass your formatDateTime & formatDate here */
+                  formatDateTime={formatDateTime}
+                  formatDate={formatDate}
                 />
               )}
             </>
@@ -184,7 +204,6 @@ export default function App() {
       {showSuccessModal && submittedCandidate && (
         <DetailModal
           candidate={submittedCandidate}
-          /* your title, subtitle, and formatters */
           onClose={() => setShowSuccessModal(false)}
         />
       )}
@@ -192,7 +211,6 @@ export default function App() {
       {viewingCandidate && (
         <DetailModal
           candidate={viewingCandidate}
-          /* your title, subtitle, and formatters */
           onClose={() => setViewingCandidate(null)}
         />
       )}
