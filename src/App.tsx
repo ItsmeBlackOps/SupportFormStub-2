@@ -91,11 +91,29 @@ export default function App() {
   };
 
   const handleEdit = (candidate: Candidate) => {
-    setFormData(candidate);
+    setFormData({
+      ...candidate,
+      id: undefined,
+      createdAt: undefined,
+      updatedAt: undefined
+    });
     setEditingCandidate(candidate);
     setMenuOpenId(null);
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDuplicate = (candidate: Candidate) => {
+    const duplicatedCandidate = {
+      ...candidate,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    const updatedCandidates = [...candidates, duplicatedCandidate];
+    saveCandidates(updatedCandidates);
+    showToast('Candidate duplicated successfully', 'success');
   };
 
   const MONTHS = [
@@ -188,6 +206,7 @@ export default function App() {
                   onView={setViewingCandidate}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
                   menuOpenId={menuOpenId}
                   setMenuOpenId={setMenuOpenId}
                   formatDate={formatDate}
