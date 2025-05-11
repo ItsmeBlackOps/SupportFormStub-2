@@ -127,9 +127,7 @@ export default function App() {
   const formatDate = (d?: string) => {
     if (!d) return '';
     const [year, month, day] = d.split('T')[0].split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${monthNames[parseInt(month, 10) - 1]} ${parseInt(day, 10)}, ${year}`;
+    return `${MONTHS[parseInt(month, 10) - 1]} ${parseInt(day, 10)}, ${year}`;
   };
 
   const getModalTitle = (c: Candidate) => {
