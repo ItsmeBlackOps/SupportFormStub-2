@@ -67,10 +67,7 @@ export default function App() {
     setShowSuccessModal(true);
     setEditingCandidate(null);
     
-    setFormData({
-      ...INITIAL_FORM_DATA,
-      taskType: formData.taskType
-    });
+    setFormData(INITIAL_FORM_DATA);
     
     showToast(
       editingCandidate ? 'Candidate updated successfully' : 'New candidate added successfully',
@@ -91,12 +88,7 @@ export default function App() {
   };
 
   const handleEdit = (candidate: Candidate) => {
-    setFormData({
-      ...candidate,
-      id: undefined,
-      createdAt: undefined,
-      updatedAt: undefined
-    });
+    setFormData(candidate);
     setEditingCandidate(candidate);
     setMenuOpenId(null);
     setActiveTab('new');
@@ -110,10 +102,11 @@ export default function App() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
-    const updatedCandidates = [...candidates, duplicatedCandidate];
-    saveCandidates(updatedCandidates);
-    showToast('Candidate duplicated successfully', 'success');
+    setFormData(duplicatedCandidate);
+    setEditingCandidate(null);
+    setActiveTab('new');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('Ready to edit duplicated candidate', 'info');
   };
 
   const MONTHS = [
@@ -209,8 +202,8 @@ export default function App() {
                   onDuplicate={handleDuplicate}
                   menuOpenId={menuOpenId}
                   setMenuOpenId={setMenuOpenId}
-                  formatDate={formatDate}
                   formatDateTime={formatDateTime}
+                  formatDate={formatDate}
                 />
               )}
             </>
