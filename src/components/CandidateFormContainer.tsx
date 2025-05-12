@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save } from 'lucide-react';
+import { Save, ImagePlus } from 'lucide-react';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
@@ -46,41 +46,60 @@ export default function CandidateFormContainer({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <form onSubmit={onSubmit} className="p-4 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          <div className="space-y-4">
-            <h2 className="text-lg font-medium text-gray-900">
+    <div className="bg-white shadow-sm rounded-lg overflow-hidden transition-all duration-300 animate-fadeIn">
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
               {isEditing ? 'Update Candidate' : 'Add New Candidate'}
             </h2>
-            
+            <p className="mt-1 text-sm text-gray-500">
+              {TASK_TYPE_LABELS[formData.taskType]} details
+            </p>
+          </div>
+          
+          <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+            <ImagePlus className="h-4 w-4 mr-1.5 text-gray-400" />
+            <span>Paste image to auto-fill</span>
+          </div>
+        </div>
+      </div>
+      
+      <form onSubmit={onSubmit} className="p-6">
+        <div className="space-y-8">
+          <FormSection title="Task Type">
             <TaskTypeSelector 
               value={formData.taskType}
               onChange={handleTaskTypeChange}
             />
-          </div>
+          </FormSection>
+          
+          <FormSection title="Candidate Information">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <AutocompleteInput
+                id="name"
+                label="Full Name"
+                value={formData.name}
+                options={[...autocompleteData.names]}
+                onChange={(value) => updateField('name', value)}
+                onOptionSelect={(value) => updateField('name', value)}
+                required
+              />
 
-          <div className="space-y-4">
-            <AutocompleteInput
-              id="name"
-              label="Full Name"
-              value={formData.name}
-              options={[...autocompleteData.names]}
-              onChange={(value) => updateField('name', value)}
-              onOptionSelect={(value) => updateField('name', value)}
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Gender</label>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                  Gender
+                </label>
                 <select
+                  id="gender"
                   value={formData.gender}
                   required
                   onChange={(e) => updateField('gender', e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 text-sm"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 
+                    transition-colors duration-200"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
@@ -88,20 +107,19 @@ export default function CandidateFormContainer({
 
               <AutocompleteInput
                 id="technology"
-                label="Technology"
+                label="Technology / Skill"
                 value={formData.technology}
                 options={[...autocompleteData.technologies]}
                 onChange={(value) => updateField('technology', value)}
                 onOptionSelect={(value) => updateField('technology', value)}
                 required
               />
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
               <AutocompleteInput
                 id="email"
-                label="Email"
+                label="Email Address"
                 type="email"
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                 value={formData.email}
                 options={[...autocompleteData.emails]}
                 onChange={(value) => updateField('email', value)}
@@ -111,149 +129,278 @@ export default function CandidateFormContainer({
 
               <AutocompleteInput
                 id="phone"
-                label="Phone"
+                label="Contact Number"
                 type="tel"
+                pattern="[0-9\s-()]+"
                 value={formData.phone}
                 options={[...autocompleteData.phones]}
                 onChange={(value) => updateField('phone', value)}
                 onOptionSelect={(value) => updateField('phone', value)}
                 required
               />
-            </div>
-          </div>
-        </div>
 
-        {/* Task-specific fields */}
-        <div className="border-t pt-4">
-          {formData.taskType === 'interview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Job Title"
-                value={formData.jobTitle || ''}
-                onChange={(e) => updateField('jobTitle', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-              <select
-                value={formData.interviewRound || ''}
-                onChange={(e) => updateField('interviewRound', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              >
-                <option value="">Select Round</option>
-                <option value="Screening">Screening</option>
-                <option value="1st">1st Round</option>
-                <option value="2nd">2nd Round</option>
-                <option value="3rd">3rd Round</option>
-                <option value="Final">Final Round</option>
-              </select>
-              <input
-                type="datetime-local"
-                value={formData.interviewDateTime || ''}
-                onChange={(e) => updateField('interviewDateTime', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Client Company"
-                value={formData.endClient || ''}
-                onChange={(e) => updateField('endClient', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
+              {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
+                <div>
+                  <label htmlFor="endClient" className="block text-sm font-medium text-gray-700">
+                    Client Company
+                  </label>
+                  <input
+                    type="text"
+                    id="endClient"
+                    value={formData.endClient || ''}
+                    required
+                    onChange={(e) => updateField('endClient', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+              )}
             </div>
+          </FormSection>
+          
+          {formData.taskType === 'interview' && (
+            <FormSection title="Interview Details">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">
+                    Job Title
+                  </label>
+                  <input
+                    type="text"
+                    id="jobTitle"
+                    value={formData.jobTitle || ''}
+                    required
+                    onChange={(e) => updateField('jobTitle', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="interviewRound" className="block text-sm font-medium text-gray-700">
+                    Interview Round
+                  </label>
+                  <select
+                    id="interviewRound"
+                    value={formData.interviewRound || ''}
+                    required
+                    onChange={(e) => updateField('interviewRound', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  >
+                    <option value="">Select Round</option>
+                    <option value="Screening">Screening</option>
+                    <option value="1st">1st Round</option>
+                    <option value="2nd">2nd Round</option>
+                    <option value="3rd">3rd Round</option>
+                    <option value="Final">Final Round</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="interviewDateTime" className="block text-sm font-medium text-gray-700">
+                    Interview Date &amp; Time (EDT)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="interviewDateTime"
+                    value={formData.interviewDateTime || ''}
+                    required
+                    onChange={(e) => updateField('interviewDateTime', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    id="duration"
+                    value={formData.duration || ''}
+                    required
+                    min={15}
+                    max={180}
+                    onChange={(e) => updateField('duration', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+              </div>
+            </FormSection>
           )}
 
           {formData.taskType === 'assessment' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="date"
-                value={formData.assessmentDeadline || ''}
-                onChange={(e) => updateField('assessmentDeadline', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Client Company"
-                value={formData.endClient || ''}
-                onChange={(e) => updateField('endClient', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-            </div>
+            <FormSection title="Assessment Details">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <label htmlFor="assessmentDeadline" className="block text-sm font-medium text-gray-700">
+                    Assessment Deadline (EDT)
+                  </label>
+                  <input
+                    type="date"
+                    id="assessmentDeadline"
+                    value={formData.assessmentDeadline || ''}
+                    required
+                    onChange={(e) => updateField('assessmentDeadline', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    id="duration"
+                    value={formData.duration || ''}
+                    required
+                    min={15}
+                    max={180}
+                    onChange={(e) => updateField('duration', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+              </div>
+            </FormSection>
           )}
 
           {formData.taskType === 'mock' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="datetime-local"
-                value={formData.availabilityDateTime || ''}
-                onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-              <select
-                value={formData.mockMode || ''}
-                onChange={(e) => updateField('mockMode', e.target.value as 'Evaluation' | 'Training')}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              >
-                <option value="">Select Mode</option>
-                <option value="Evaluation">Evaluation</option>
-                <option value="Training">Training</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Client Company"
-                value={formData.endClient || ''}
-                onChange={(e) => updateField('endClient', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-              />
-              <textarea
-                placeholder="Remarks"
-                value={formData.remarks || ''}
-                onChange={(e) => updateField('remarks', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-                rows={3}
-              />
-            </div>
+            <FormSection title="Mock Interview Details">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
+                    Availability (Date &amp; Time) (EDT)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="availabilityDateTime"
+                    value={formData.availabilityDateTime || ''}
+                    required
+                    onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
+                    Mode
+                  </label>
+                  <select
+                    id="mockMode"
+                    value={formData.mockMode || ''}
+                    required
+                    onChange={(e) => updateField('mockMode', e.target.value as 'Evaluation' | 'Training')}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  >
+                    <option value="">Select Mode</option>
+                    <option value="Evaluation">Evaluation</option>
+                    <option value="Training">Training</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
+                    Remarks
+                  </label>
+                  <textarea
+                    id="remarks"
+                    value={formData.remarks || ''}
+                    required
+                    onChange={(e) => updateField('remarks', e.target.value)}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+              </div>
+            </FormSection>
           )}
 
-          {['resumeUnderstanding', 'resumeReview'].includes(formData.taskType) && (
-            <div className="grid grid-cols-1 gap-4">
-              {formData.taskType === 'resumeUnderstanding' && (
-                <input
-                  type="datetime-local"
-                  value={formData.availabilityDateTime || ''}
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                  className="rounded-md border-gray-300 text-sm"
+          {formData.taskType === 'resumeUnderstanding' && (
+            <FormSection title="Resume Understanding Details">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
+                    Availability (Date &amp; Time) (EDT)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="availabilityDateTime"
+                    value={formData.availabilityDateTime || ''}
+                    required
+                    onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
+                    Remarks
+                  </label>
+                  <textarea
+                    id="remarks"
+                    value={formData.remarks || ''}
+                    required
+                    onChange={(e) => updateField('remarks', e.target.value)}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                      transition-colors duration-200"
+                  />
+                </div>
+              </div>
+            </FormSection>
+          )}
+
+          {formData.taskType === 'resumeReview' && (
+            <FormSection title="Resume Making Details">
+              <div>
+                <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
+                  Remarks
+                </label>
+                <textarea
+                  id="remarks"
+                  value={formData.remarks || ''}
                   required
+                  onChange={(e) => updateField('remarks', e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                    transition-colors duration-200"
                 />
-              )}
-              <textarea
-                placeholder="Remarks"
-                value={formData.remarks || ''}
-                onChange={(e) => updateField('remarks', e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
-                required
-                rows={3}
-              />
-            </div>
+              </div>
+            </FormSection>
           )}
         </div>
 
-        <div className="flex justify-end">
+        <div className="mt-8">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+            className="group relative w-full flex justify-center items-center gap-2 rounded-md
+                      bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm 
+                      hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                      focus:ring-offset-2 transition-colors duration-200"
           >
-            <Save className="h-4 w-4" />
-            {isEditing ? 'Update' : 'Save'}
+            <Save className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+              {isEditing ? 'Update Candidate' : 'Save Candidate'}
+            </span>
           </button>
         </div>
       </form>
