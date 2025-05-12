@@ -89,7 +89,7 @@ export default function App() {
   };
 
   const handleClone = (candidate: Candidate) => {
-    setFormData({ ...candidate, name: `${candidate.name} (Copy)` });
+    setFormData({ ...candidate });
     setEditingCandidate(null);
     setMenuOpenId(null);
     setActiveTab('new');
