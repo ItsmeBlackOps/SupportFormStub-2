@@ -44,37 +44,32 @@ export default function App() {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
 
-  // Helper to persist candidate list
+  // Persist helper
   const saveCandidates = (updated: Candidate[]) => {
     setCandidates(updated);
     localStorage.setItem('candidates', JSON.stringify(updated));
     updateAutocompleteData(updated);
   };
 
-  // Form submit: create or update
+  // Form submit: update existing or append new
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const candidateToSave: Candidate = {
       id: editingCandidate?.id || crypto.randomUUID(),
       ...formData,
       createdAt: editingCandidate?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
-
     const updatedList = editingCandidate
       ? candidates.map(c => c.id === editingCandidate.id ? candidateToSave : c)
       : [...candidates, candidateToSave];
-
     saveCandidates(updatedList);
     setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);
-
-    // Reset form and state
+    // Reset state
     setEditingCandidate(null);
     setFormData(INITIAL_FORM_DATA);
     setActiveTab('scheduled');
-
     showToast(
       editingCandidate ? 'Candidate updated successfully' : 'New candidate added successfully',
       'success'
@@ -91,7 +86,7 @@ export default function App() {
     setMenuOpenId(null);
   };
 
-  // Edit existing: prefill form
+  // Edit flow: prefill form in “update” mode
   const handleEdit = (candidate: Candidate) => {
     setFormData(candidate);
     setEditingCandidate(candidate);
@@ -100,20 +95,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Duplicate & Edit: prefill form as new
+  // Duplicate & Edit flow: immediately append clone, then edit that clone
   const handleDuplicate = (candidate: Candidate) => {
     const clone: Candidate = {
       ...candidate,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
+    // 1) Append clone to state so it appears in the timeline
+    saveCandidates([...candidates, clone]);
+    // 2) Prefill form and set clone into “update” mode
     setFormData(clone);
-    setEditingCandidate(null);
+    setEditingCandidate(clone);
     setMenuOpenId(null);
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Duplicated candidate — now edit and save as new', 'info');
+    showToast('Duplicated candidate — now edit and save', 'info');
   };
 
   // Month names for formatting
@@ -137,7 +135,7 @@ export default function App() {
     return `${MONTHS[month - 1]} ${day}, ${year}`;
   };
 
-  // Choose modal title based on task type
+  // Modal title based on task type
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {
       case 'interview':
@@ -165,14 +163,14 @@ export default function App() {
             {
               id: 'new',
               label: editingCandidate ? 'Edit Candidate' : 'Add Candidate',
-              icon: Plus,
+              icon: Plus
             },
             {
               id: 'scheduled',
               label: 'Scheduled',
               icon: CalendarClock,
-              badge: candidates.length || undefined,
-            },
+              badge: candidates.length || undefined
+            }
           ]}
         />
 
@@ -199,7 +197,10 @@ export default function App() {
                 <EmptyState
                   title="No candidates scheduled"
                   description="Add a new candidate to get started"
-                  action={{ label: 'Add Candidate', onClick: () => setActiveTab('new') }}
+                  action={{
+                    label: 'Add Candidate',
+                    onClick: () => setActiveTab('new')
+                  }}
                 />
               ) : (
                 <CandidateTimeline
