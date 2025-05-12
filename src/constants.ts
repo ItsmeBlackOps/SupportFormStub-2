@@ -20,39 +20,39 @@ export const INITIAL_FORM_DATA: FormData = {
 
 export const TASK_TYPE_COLORS = {
   interview: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
-    icon: 'text-blue-500',
-    hover: 'hover:bg-blue-50'
+    bg: 'bg-primary-100',
+    text: 'text-primary-800',
+    border: 'border-primary-200',
+    icon: 'text-primary-600',
+    hover: 'hover:bg-primary-50'
   },
   assessment: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-800',
-    border: 'border-purple-200',
-    icon: 'text-purple-500',
-    hover: 'hover:bg-purple-50'
+    bg: 'bg-accent-100',
+    text: 'text-accent-800',
+    border: 'border-accent-200',
+    icon: 'text-accent-600',
+    hover: 'hover:bg-accent-50'
   },
   mock: {
-    bg: 'bg-amber-100',
-    text: 'text-amber-800',
-    border: 'border-amber-200',
-    icon: 'text-amber-500',
-    hover: 'hover:bg-amber-50'
+    bg: 'bg-primary-100',
+    text: 'text-primary-800',
+    border: 'border-primary-200',
+    icon: 'text-primary-600',
+    hover: 'hover:bg-primary-50'
   },
   resumeUnderstanding: {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-800',
-    border: 'border-emerald-200',
-    icon: 'text-emerald-500',
-    hover: 'hover:bg-emerald-50'
+    bg: 'bg-accent-100',
+    text: 'text-accent-800',
+    border: 'border-accent-200',
+    icon: 'text-accent-600',
+    hover: 'hover:bg-accent-50'
   },
   resumeReview: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
-    icon: 'text-red-500',
-    hover: 'hover:bg-red-50'
+    bg: 'bg-primary-100',
+    text: 'text-primary-800',
+    border: 'border-primary-200',
+    icon: 'text-primary-600',
+    hover: 'hover:bg-primary-50'
   }
 };
 
