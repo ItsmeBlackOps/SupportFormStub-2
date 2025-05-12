@@ -25,6 +25,7 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
+  // Load candidates from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
     if (saved) {
@@ -37,54 +38,60 @@ export default function App() {
     }
   }, []);
 
+  // Handle paste events for image autofill
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
 
-  const saveCandidates = (updatedCandidates: Candidate[]) => {
-    setCandidates(updatedCandidates);
-    localStorage.setItem('candidates', JSON.stringify(updatedCandidates));
-    updateAutocompleteData(updatedCandidates);
+  // Helper to persist candidate list
+  const saveCandidates = (updated: Candidate[]) => {
+    setCandidates(updated);
+    localStorage.setItem('candidates', JSON.stringify(updated));
+    updateAutocompleteData(updated);
   };
 
+  // Form submit: create or update
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const newCandidate: Candidate = {
+
+    const candidateToSave: Candidate = {
       id: editingCandidate?.id || crypto.randomUUID(),
       ...formData,
       createdAt: editingCandidate?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
-    const updatedCandidates = editingCandidate
-      ? candidates.map(c => c.id === editingCandidate.id ? newCandidate : c)
-      : [...candidates, newCandidate];
-    
-    saveCandidates(updatedCandidates);
-    setSubmittedCandidate(newCandidate);
+
+    const updatedList = editingCandidate
+      ? candidates.map(c => c.id === editingCandidate.id ? candidateToSave : c)
+      : [...candidates, candidateToSave];
+
+    saveCandidates(updatedList);
+    setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);
+
+    // Reset form and state
     setEditingCandidate(null);
     setFormData(INITIAL_FORM_DATA);
     setActiveTab('scheduled');
-    
+
     showToast(
       editingCandidate ? 'Candidate updated successfully' : 'New candidate added successfully',
       'success'
     );
   };
 
+  // Delete a candidate
   const handleDelete = (id: string) => {
-    const candidateToDelete = candidates.find(c => c.id === id);
-    if (candidateToDelete) {
-      const updatedCandidates = candidates.filter(c => c.id !== id);
-      saveCandidates(updatedCandidates);
-      showToast(`Removed ${candidateToDelete.name}`, 'info');
-      setMenuOpenId(null);
-    }
+    const target = candidates.find(c => c.id === id);
+    if (!target) return;
+    const filtered = candidates.filter(c => c.id !== id);
+    saveCandidates(filtered);
+    showToast(`Removed ${target.name}`, 'info');
+    setMenuOpenId(null);
   };
 
+  // Edit existing: prefill form
   const handleEdit = (candidate: Candidate) => {
     setFormData(candidate);
     setEditingCandidate(candidate);
@@ -93,27 +100,26 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Duplicate & Edit: prefill form as new
   const handleDuplicate = (candidate: Candidate) => {
-    const duplicatedCandidate = {
+    const clone: Candidate = {
       ...candidate,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
-    saveCandidates([...candidates, duplicatedCandidate]);
-    setFormData(duplicatedCandidate);
+    setFormData(clone);
     setEditingCandidate(null);
+    setMenuOpenId(null);
     setActiveTab('new');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Duplicated candidate - now edit and save as new', 'info');
+    showToast('Duplicated candidate — now edit and save as new', 'info');
   };
 
-  const MONTHS = [
-    'Jan','Feb','Mar','Apr','May','Jun',
-    'Jul','Aug','Sep','Oct','Nov','Dec'
-  ];
-  
+  // Month names for formatting
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Format full date & time
   const formatDateTime = (dt?: string) => {
     if (!dt) return '';
     const [datePart, timePart = '00:00'] = dt.split('T');
@@ -121,17 +127,17 @@ export default function App() {
     let [h, m] = timePart.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
+    return `${MONTHS[mo - 1]} ${da}, ${year} at ${h}:${String(m).padStart(2, '0')} ${ampm}`;
   };
 
+  // Format just date
   const formatDate = (d?: string) => {
     if (!d) return '';
-    const [year, month, day] = d.split('T')[0].split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${monthNames[parseInt(month, 10) - 1]} ${parseInt(day, 10)}, ${year}`;
+    const [year, month, day] = d.split('T')[0].split('-').map(Number);
+    return `${MONTHS[month - 1]} ${day}, ${year}`;
   };
 
+  // Choose modal title based on task type
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {
       case 'interview':
@@ -141,34 +147,41 @@ export default function App() {
       case 'mock':
         return `Mock Interview — ${c.mockMode || 'Session'}`;
       case 'resumeUnderstanding':
-        return `Resume Understanding`;
+        return 'Resume Understanding';
       case 'resumeReview':
-        return `Resume Review`;
+        return 'Resume Review';
       default:
-        return `Candidate Details`;
+        return 'Candidate Details';
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <TabNavigation 
-          activeTab={activeTab} 
+        <TabNavigation
+          activeTab={activeTab}
           onChange={setActiveTab}
           tabs={[
-            { id: 'new', label: editingCandidate ? 'Edit Candidate' : 'Add Candidate', icon: Plus },
-            { id: 'scheduled', label: 'Scheduled', icon: CalendarClock, 
-              badge: candidates.length > 0 ? candidates.length : undefined 
-            }
+            {
+              id: 'new',
+              label: editingCandidate ? 'Edit Candidate' : 'Add Candidate',
+              icon: Plus,
+            },
+            {
+              id: 'scheduled',
+              label: 'Scheduled',
+              icon: CalendarClock,
+              badge: candidates.length || undefined,
+            },
           ]}
         />
-        
+
         <div className="mt-4 transition-all duration-200">
-          {activeTab === 'new' && (
+          {activeTab === 'new' ? (
             <>
               {isAnalyzing && <LoadingOverlay />}
               {analysisError && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-fadeIn">
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-600">{analysisError.message}</p>
                 </div>
               )}
@@ -180,18 +193,13 @@ export default function App() {
                 isEditing={!!editingCandidate}
               />
             </>
-          )}
-          
-          {activeTab === 'scheduled' && (
+          ) : (
             <>
               {candidates.length === 0 ? (
-                <EmptyState 
+                <EmptyState
                   title="No candidates scheduled"
                   description="Add a new candidate to get started"
-                  action={{
-                    label: "Add Candidate",
-                    onClick: () => setActiveTab('new')
-                  }}
+                  action={{ label: 'Add Candidate', onClick: () => setActiveTab('new') }}
                 />
               ) : (
                 <CandidateTimeline
@@ -215,6 +223,7 @@ export default function App() {
         <DetailModal
           candidate={submittedCandidate}
           title={getModalTitle(submittedCandidate)}
+          subtitle={`${submittedCandidate.name} — ${submittedCandidate.technology}`}
           onClose={() => setShowSuccessModal(false)}
           formatDateTime={formatDateTime}
           formatDate={formatDate}
@@ -225,12 +234,13 @@ export default function App() {
         <DetailModal
           candidate={viewingCandidate}
           title={getModalTitle(viewingCandidate)}
+          subtitle={`${viewingCandidate.name} — ${viewingCandidate.technology}`}
           onClose={() => setViewingCandidate(null)}
           formatDateTime={formatDateTime}
           formatDate={formatDate}
         />
       )}
-      
+
       <ToastContainer />
     </div>
   );
