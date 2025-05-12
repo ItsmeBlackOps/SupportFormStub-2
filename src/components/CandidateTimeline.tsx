@@ -13,7 +13,6 @@ import {
   Copy,
   Mail,
   Phone,
-  Check,
   Search,
   Filter,
   SortAsc,
@@ -45,7 +44,6 @@ export default function CandidateTimeline({
   formatDateTime,
   formatDate,
 }: CandidateTimelineProps) {
-  const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<TaskType[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -71,9 +69,7 @@ export default function CandidateTimeline({
   };
   
   filteredCandidates.forEach(candidate => {
-    if (candidatesByType[candidate.taskType]) {
-      candidatesByType[candidate.taskType].push(candidate);
-    }
+    candidatesByType[candidate.taskType].push(candidate);
   });
   
   Object.keys(candidatesByType).forEach(type => {
@@ -100,7 +96,7 @@ export default function CandidateTimeline({
         : dateB.getTime() - dateA.getTime();
     });
   });
-  
+
   const getTaskTypeIcon = (type: TaskType) => {
     switch (type) {
       case 'interview': return <BriefcaseIcon className="h-5 w-5" />;
@@ -109,15 +105,6 @@ export default function CandidateTimeline({
       case 'resumeUnderstanding': return <FileText className="h-5 w-5" />;
       case 'resumeReview': return <FileText className="h-5 w-5" />;
     }
-  };
-
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        setCopySuccess(id);
-        setTimeout(() => setCopySuccess(null), 2000);
-      })
-      .catch(err => console.error('Failed to copy: ', err));
   };
 
   const toggleTaskType = (type: TaskType) => {
@@ -129,71 +116,54 @@ export default function CandidateTimeline({
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="flex flex-col space-y-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
               type="text"
-              placeholder="Search by name, technology, email, or phone..."
+              placeholder="Search candidates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white 
-                        placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 
-                        focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-2 items-center">
-              <div className="flex items-center gap-2 mr-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Filters:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(TASK_TYPE_LABELS) as TaskType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => toggleTaskType(type)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
-                      ${selectedTypes.includes(type)
-                        ? `${TASK_TYPE_COLORS[type].bg} ${TASK_TYPE_COLORS[type].text}`
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      } transition-colors duration-200`}
-                  >
-                    {TASK_TYPE_LABELS[type]}
-                  </button>
-                ))}
-              </div>
+              <Filter className="h-4 w-4 text-gray-400" />
+              {(Object.keys(TASK_TYPE_LABELS) as TaskType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => toggleTaskType(type)}
+                  className={`px-2 py-1 rounded-md text-xs font-medium
+                    ${selectedTypes.includes(type)
+                      ? `${TASK_TYPE_COLORS[type].bg} ${TASK_TYPE_COLORS[type].text}`
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {TASK_TYPE_LABELS[type]}
+                </button>
+              ))}
             </div>
 
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm 
-                        font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                        transition-colors duration-200 whitespace-nowrap"
+              className="p-2 rounded-md hover:bg-gray-100"
             >
-              {sortOrder === 'asc' ? (
-                <>
-                  <SortAsc className="h-4 w-4 mr-2" />
-                  Oldest First
-                </>
-              ) : (
-                <>
-                  <SortDesc className="h-4 w-4 mr-2" />
-                  Newest First
-                </>
-              )}
+              {sortOrder === 'asc' 
+                ? <SortAsc className="h-4 w-4 text-gray-500" />
+                : <SortDesc className="h-4 w-4 text-gray-500" />
+              }
             </button>
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {(Object.keys(candidatesByType) as TaskType[]).map(type => {
           const typeData = candidatesByType[type];
           if (typeData.length === 0) return null;
@@ -201,147 +171,107 @@ export default function CandidateTimeline({
           const colors = TASK_TYPE_COLORS[type];
           
           return (
-            <div key={type} className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className={`p-5 border-b ${colors.border}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`p-2 rounded-md ${colors.bg} mr-3`}>
-                      {getTaskTypeIcon(type)}
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        {TASK_TYPE_LABELS[type]}
-                      </h2>
-                      <p className="text-sm text-gray-500">
-                        {typeData.length} candidate{typeData.length !== 1 ? 's' : ''} scheduled
-                      </p>
-                    </div>
-                  </div>
+            <div key={type} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className={`px-4 py-3 border-b ${colors.border} flex items-center justify-between`}>
+                <div className="flex items-center gap-2">
+                  {getTaskTypeIcon(type)}
+                  <span className="font-medium">{TASK_TYPE_LABELS[type]} ({typeData.length})</span>
                 </div>
               </div>
               
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-100">
                 {typeData.map((candidate) => (
-                  <div
-                    key={candidate.id}
-                    className="p-6 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0 space-y-3">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {candidate.name}
-                          </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
+                  <div key={candidate.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-sm font-medium truncate">{candidate.name}</h3>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
                             {candidate.technology}
                           </span>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex flex-wrap gap-3 text-xs text-gray-500">
                           {candidate.taskType === 'interview' && (
                             <>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
                                 {formatDateTime(candidate.interviewDateTime)}
-                              </div>
+                              </span>
                               {candidate.jobTitle && (
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <BriefcaseIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                                <span className="flex items-center gap-1">
+                                  <BriefcaseIcon className="h-3 w-3" />
                                   {candidate.jobTitle}
-                                </div>
+                                </span>
                               )}
                             </>
                           )}
 
                           {candidate.taskType === 'assessment' && (
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
                               Due: {formatDate(candidate.assessmentDeadline)}
-                            </div>
+                            </span>
                           )}
 
                           {['mock', 'resumeUnderstanding'].includes(candidate.taskType) && (
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
                               {formatDateTime(candidate.availabilityDateTime)}
-                            </div>
+                            </span>
                           )}
 
                           {candidate.endClient && (
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Building2 className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            <span className="flex items-center gap-1">
+                              <Building2 className="h-3 w-3" />
                               {candidate.endClient}
-                            </div>
+                            </span>
                           )}
 
                           {candidate.duration && (
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Clock className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                              {candidate.duration} minutes
-                            </div>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {candidate.duration}m
+                            </span>
                           )}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-4">
-                          <button
-                            onClick={() => copyToClipboard(candidate.email, `email-${candidate.id}`)}
-                            className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                          >
-                            <Mail className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                            <span className="truncate">{candidate.email}</span>
-                            {copySuccess === `email-${candidate.id}` && (
-                              <Check className="h-4 w-4 text-green-500 ml-1" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => copyToClipboard(candidate.phone, `phone-${candidate.id}`)}
-                            className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                          >
-                            <Phone className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                            <span className="truncate">{candidate.phone}</span>
-                            {copySuccess === `phone-${candidate.id}` && (
-                              <Check className="h-4 w-4 text-green-500 ml-1" />
-                            )}
-                          </button>
+                        <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                          <a href={`mailto:${candidate.email}`} className="flex items-center gap-1 hover:text-gray-700">
+                            <Mail className="h-3 w-3" />
+                            {candidate.email}
+                          </a>
+                          <a href={`tel:${candidate.phone}`} className="flex items-center gap-1 hover:text-gray-700">
+                            <Phone className="h-3 w-3" />
+                            {candidate.phone}
+                          </a>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:flex-col">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => onView(candidate)}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-gray-500 
-                                   hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors w-full"
-                          title="View Details"
+                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
                         >
-                          <Eye className="h-5 w-5" />
-                          <span className="ml-2 sm:hidden">View</span>
+                          <Eye className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onEdit(candidate)}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-gray-500 
-                                   hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors w-full"
-                          title="Edit"
+                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
                         >
-                          <Edit2 className="h-5 w-5" />
-                          <span className="ml-2 sm:hidden">Edit</span>
+                          <Edit2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onClone(candidate)}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-gray-500 
-                                   hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors w-full"
-                          title="Clone"
+                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
                         >
-                          <Copy className="h-5 w-5" />
-                          <span className="ml-2 sm:hidden">Clone</span>
+                          <Copy className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onDelete(candidate.id)}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-red-500 
-                                   hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors w-full"
-                          title="Delete"
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
                         >
-                          <Trash2 className="h-5 w-5" />
-                          <span className="ml-2 sm:hidden">Delete</span>
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
