@@ -10,7 +10,6 @@ import {
   BriefcaseIcon,
   UserCheckIcon,
   ClipboardCheckIcon,
-  Copy,
   Mail,
   Phone,
   Check,
@@ -41,12 +40,11 @@ export default function CandidateTimeline({
   formatDateTime,
   formatDate,
 }: CandidateTimelineProps) {
-  const [copySuccess, setCopySuccess] = React.useState<string | null>(null);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<TaskType[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Filter and sort candidates
   const filteredCandidates = candidates.filter(candidate => {
     const matchesSearch = searchTerm === '' || 
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,7 +57,6 @@ export default function CandidateTimeline({
     return matchesSearch && matchesType;
   });
 
-  // Group candidates by type
   const candidatesByType: Record<TaskType, Candidate[]> = {
     interview: [],
     assessment: [],
@@ -74,7 +71,6 @@ export default function CandidateTimeline({
     }
   });
   
-  // Sort each group
   Object.keys(candidatesByType).forEach(type => {
     const taskType = type as TaskType;
     candidatesByType[taskType].sort((a, b) => {
@@ -110,16 +106,6 @@ export default function CandidateTimeline({
     }
   };
 
-  const handleDuplicateAndEdit = (candidate: Candidate) => {
-    const duplicatedCandidate: Candidate = {
-      ...candidate,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    onEdit(duplicatedCandidate);
-  };
-
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
@@ -139,10 +125,8 @@ export default function CandidateTimeline({
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Search and Filter Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="flex flex-col space-y-4">
-          {/* Search Input */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
@@ -159,7 +143,6 @@ export default function CandidateTimeline({
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between gap-4">
-            {/* Filter Buttons */}
             <div className="flex flex-wrap gap-2 items-center">
               <div className="flex items-center gap-2 mr-2">
                 <Filter className="h-5 w-5 text-gray-400" />
@@ -182,7 +165,6 @@ export default function CandidateTimeline({
               </div>
             </div>
 
-            {/* Sort Button */}
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
               className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm 
@@ -206,7 +188,6 @@ export default function CandidateTimeline({
         </div>
       </div>
 
-      {/* Candidates List */}
       <div className="space-y-6">
         {(Object.keys(candidatesByType) as TaskType[]).map(type => {
           const typeData = candidatesByType[type];
@@ -216,7 +197,6 @@ export default function CandidateTimeline({
           
           return (
             <div key={type} className="bg-white shadow-sm rounded-lg overflow-hidden">
-              {/* Section Header */}
               <div className={`p-5 border-b ${colors.border}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -235,7 +215,6 @@ export default function CandidateTimeline({
                 </div>
               </div>
               
-              {/* Candidate List */}
               <div className="divide-y divide-gray-200">
                 {typeData.map((candidate) => (
                   <div
@@ -244,30 +223,15 @@ export default function CandidateTimeline({
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div className="flex-1 min-w-0 space-y-3">
-                        {/* Name and Technology */}
                         <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => copyToClipboard(candidate.name, `name-${candidate.id}`)}
-                              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                              title="Copy Name"
-                            >
-                              {copySuccess === `name-${candidate.id}` ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4 text-gray-400" />
-                              )}
-                            </button>
-                            <h3 className="text-lg font-medium text-gray-900 ml-2">
-                              {candidate.name}
-                            </h3>
-                          </div>
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {candidate.name}
+                          </h3>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
                             {candidate.technology}
                           </span>
                         </div>
 
-                        {/* Schedule Details */}
                         <div className="flex flex-wrap items-center gap-4">
                           {candidate.taskType === 'interview' && (
                             <>
@@ -313,7 +277,6 @@ export default function CandidateTimeline({
                           )}
                         </div>
 
-                        {/* Contact Info */}
                         <div className="flex flex-wrap items-center gap-4">
                           <button
                             onClick={() => copyToClipboard(candidate.email, `email-${candidate.id}`)}
@@ -338,7 +301,6 @@ export default function CandidateTimeline({
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
                       <div className="flex items-center gap-2 sm:flex-col">
                         <button
                           onClick={() => onView(candidate)}
@@ -357,15 +319,6 @@ export default function CandidateTimeline({
                         >
                           <Edit2 className="h-5 w-5" />
                           <span className="ml-2 sm:hidden">Edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleDuplicateAndEdit(candidate)}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-gray-500 
-                                   hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors w-full"
-                          title="Duplicate & Edit"
-                        >
-                          <Copy className="h-5 w-5" />
-                          <span className="ml-2 sm:hidden">Copy</span>
                         </button>
                         <button
                           onClick={() => onDelete(candidate.id)}

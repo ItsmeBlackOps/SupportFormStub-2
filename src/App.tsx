@@ -25,7 +25,6 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
-  // Load candidates from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
     if (saved) {
@@ -38,20 +37,17 @@ export default function App() {
     }
   }, []);
 
-  // Handle paste events for image autofill
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
 
-  // Persist helper
   const saveCandidates = (updated: Candidate[]) => {
     setCandidates(updated);
     localStorage.setItem('candidates', JSON.stringify(updated));
     updateAutocompleteData(updated);
   };
 
-  // Form submit: update existing or append new
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const candidateToSave: Candidate = {
@@ -66,7 +62,6 @@ export default function App() {
     saveCandidates(updatedList);
     setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);
-    // Reset state
     setEditingCandidate(null);
     setFormData(INITIAL_FORM_DATA);
     setActiveTab('scheduled');
@@ -76,7 +71,6 @@ export default function App() {
     );
   };
 
-  // Delete a candidate
   const handleDelete = (id: string) => {
     const target = candidates.find(c => c.id === id);
     if (!target) return;
@@ -86,7 +80,6 @@ export default function App() {
     setMenuOpenId(null);
   };
 
-  // Edit flow: prefill form in “update” mode
   const handleEdit = (candidate: Candidate) => {
     setFormData(candidate);
     setEditingCandidate(candidate);
@@ -95,29 +88,8 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Duplicate & Edit flow: immediately append clone, then edit that clone
-  const handleDuplicate = (candidate: Candidate) => {
-    const clone: Candidate = {
-      ...candidate,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    // 1) Append clone to state so it appears in the timeline
-    saveCandidates([...candidates, clone]);
-    // 2) Prefill form and set clone into “update” mode
-    setFormData(clone);
-    setEditingCandidate(clone);
-    setMenuOpenId(null);
-    setActiveTab('new');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Duplicated candidate — now edit and save', 'info');
-  };
-
-  // Month names for formatting
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  // Format full date & time
+  
   const formatDateTime = (dt?: string) => {
     if (!dt) return '';
     const [datePart, timePart = '00:00'] = dt.split('T');
@@ -125,17 +97,15 @@ export default function App() {
     let [h, m] = timePart.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    return `${MONTHS[mo - 1]} ${da}, ${year} at ${h}:${String(m).padStart(2, '0')} ${ampm}`;
+    return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
   };
 
-  // Format just date
   const formatDate = (d?: string) => {
     if (!d) return '';
-    const [year, month, day] = d.split('T')[0].split('-').map(Number);
-    return `${MONTHS[month - 1]} ${day}, ${year}`;
+    const [year, month, day] = d.split('T')[0].split('-');
+    return `${MONTHS[parseInt(month, 10)-1]} ${parseInt(day, 10)}, ${year}`;
   };
 
-  // Modal title based on task type
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {
       case 'interview':
@@ -208,7 +178,6 @@ export default function App() {
                   onView={setViewingCandidate}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
                   menuOpenId={menuOpenId}
                   setMenuOpenId={setMenuOpenId}
                   formatDateTime={formatDateTime}
