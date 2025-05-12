@@ -10,6 +10,7 @@ import {
   BriefcaseIcon,
   UserCheckIcon,
   ClipboardCheckIcon,
+  Copy,
   Mail,
   Phone,
   Check,
@@ -25,6 +26,7 @@ interface CandidateTimelineProps {
   candidates: Candidate[];
   onView: (candidate: Candidate) => void;
   onEdit: (candidate: Candidate) => void;
+  onClone: (candidate: Candidate) => void;
   onDelete: (id: string) => void;
   menuOpenId: string | null;
   setMenuOpenId: (id: string | null) => void;
@@ -36,7 +38,10 @@ export default function CandidateTimeline({
   candidates,
   onView,
   onEdit,
+  onClone,
   onDelete,
+  menuOpenId,
+  setMenuOpenId,
   formatDateTime,
   formatDate,
 }: CandidateTimelineProps) {
@@ -319,6 +324,15 @@ export default function CandidateTimeline({
                         >
                           <Edit2 className="h-5 w-5" />
                           <span className="ml-2 sm:hidden">Edit</span>
+                        </button>
+                        <button
+                          onClick={() => onClone(candidate)}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center p-2 text-gray-500 
+                                   hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors w-full"
+                          title="Clone"
+                        >
+                          <Copy className="h-5 w-5" />
+                          <span className="ml-2 sm:hidden">Clone</span>
                         </button>
                         <button
                           onClick={() => onDelete(candidate.id)}

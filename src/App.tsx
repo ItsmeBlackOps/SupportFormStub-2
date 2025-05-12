@@ -88,6 +88,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleClone = (candidate: Candidate) => {
+    setFormData({ ...candidate, name: `${candidate.name} (Copy)` });
+    setEditingCandidate(null);
+    setMenuOpenId(null);
+    setActiveTab('new');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('Cloned candidate - edit and save as new', 'info');
+  };
+
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   
   const formatDateTime = (dt?: string) => {
@@ -177,6 +186,7 @@ export default function App() {
                   candidates={candidates}
                   onView={setViewingCandidate}
                   onEdit={handleEdit}
+                  onClone={handleClone}
                   onDelete={handleDelete}
                   menuOpenId={menuOpenId}
                   setMenuOpenId={setMenuOpenId}
