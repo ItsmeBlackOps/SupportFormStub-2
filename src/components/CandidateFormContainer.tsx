@@ -5,6 +5,7 @@ import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
 import { FormData, AutocompleteData, AssessmentType } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
+import { Modal } from './Modal';
 
 interface CandidateFormProps {
   formData: FormData;
@@ -21,7 +22,7 @@ export default function CandidateFormContainer({
   onSubmit,
   isEditing
 }: CandidateFormProps) {
-  const [assessmentTypeError, setAssessmentTypeError] = useState('');
+  const [showAssessmentTypeModal, setShowAssessmentTypeModal] = useState(false);
 
   const updateField = (field: keyof FormData, value: any) => {
     setFormData({ ...formData, [field]: value });
@@ -51,23 +52,16 @@ export default function CandidateFormContainer({
   };
 
   const handleDeadlineNotMentioned = (checked: boolean) => {
-    updateField('deadlineNotMentioned', checked);
-    if (!checked) {
+    if (checked) {
+      setShowAssessmentTypeModal(true);
+    } else {
+      updateField('deadlineNotMentioned', false);
       updateField('assessmentType', undefined);
       updateField('assessmentDeadline', '');
-      setAssessmentTypeError('');
     }
   };
 
-  const handleAssessmentTypeChange = (value: string) => {
-    const type = parseInt(value);
-    if (isNaN(type) || ![0, 1, 2].includes(type)) {
-      setAssessmentTypeError('Please enter 0 (Technical), 1 (Non-Technical), or 2 (Unknown)');
-      updateField('assessmentType', undefined);
-      return;
-    }
-
-    setAssessmentTypeError('');
+  const handleAssessmentTypeSelect = (type: AssessmentType) => {
     const now = new Date();
     const deadline = new Date(now);
     
@@ -82,8 +76,10 @@ export default function CandidateFormContainer({
       deadline.setDate(nyDate.getDate() + 7);
     }
 
-    updateField('assessmentType', type as AssessmentType);
+    updateField('deadlineNotMentioned', true);
+    updateField('assessmentType', type);
     updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
+    setShowAssessmentTypeModal(false);
   };
 
   const handleScreeningDone = (checked: boolean) => {
@@ -295,37 +291,6 @@ export default function CandidateFormContainer({
                   </label>
                 </div>
 
-                {formData.deadlineNotMentioned && (
-                  <div>
-                    <label htmlFor="assessmentType" className="block text-sm font-medium text-gray-700">
-                      Assessment Type
-                    </label>
-                    <div className="mt-1 relative">
-                      <input
-                        type="text"
-                        id="assessmentType"
-                        placeholder="Enter 0, 1, or 2"
-                        value={formData.assessmentType ?? ''}
-                        onChange={(e) => handleAssessmentTypeChange(e.target.value)}
-                        className={`block w-full rounded-md px-3 py-2 shadow-sm
-                          focus:outline-none focus:ring-1 transition-colors duration-200
-                          ${assessmentTypeError 
-                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-                          }`}
-                      />
-                      {assessmentTypeError && (
-                        <p className="mt-1 text-xs text-red-600">{assessmentTypeError}</p>
-                      )}
-                      <div className="mt-1 text-xs text-gray-500">
-                        0 = Technical (7 days)<br />
-                        1 = Non-Technical (3 days)<br />
-                        2 = Unknown (7 days)
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -496,6 +461,33 @@ export default function CandidateFormContainer({
           </button>
         </div>
       </form>
+
+      <Modal
+        isOpen={showAssessmentTypeModal}
+        onClose={() => setShowAssessmentTypeModal(false)}
+        title="Select Assessment Type"
+      >
+        <div className="space-y-4">
+          <button
+            onClick={() => handleAssessmentTypeSelect(0)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            0 - Technical
+          </button>
+          <button
+            onClick={() => handleAssessmentTypeSelect(1)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            1 - Non-Technical
+          </button>
+          <button
+            onClick={() => handleAssessmentTypeSelect(2)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            2 - Unknown
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
