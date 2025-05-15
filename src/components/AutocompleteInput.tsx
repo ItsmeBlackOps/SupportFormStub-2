@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 interface AutocompleteInputProps {
   id: string;
@@ -27,14 +28,40 @@ export function AutocompleteInput({
 }: AutocompleteInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState<number>(-1);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
+  const socketRef = useRef<any>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout>();
 
-  const filteredOptions = options
-    .filter(option => option.toLowerCase().includes(value.toLowerCase()))
-    .slice(0, 5); // Limit to 5 options for better UX
+  useEffect(() => {
+    if (id === 'name') {
+      socketRef.current = io('https://mongo.tunn.dev', {
+        transports: ['websocket'],
+        withCredentials: false,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 5000
+      });
 
-  // Scroll active option into view
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected:', socketRef.current.id);
+      });
+
+      socketRef.current.on('search_response', (data: any[]) => {
+        setSearchResults(data);
+        setIsLoading(false);
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+        }
+      };
+    }
+  }, [id]);
+
   useEffect(() => {
     if (showDropdown && focusedOptionIndex >= 0 && dropdownRef.current) {
       const activeOption = dropdownRef.current.children[focusedOptionIndex] as HTMLElement;
@@ -44,14 +71,62 @@ export function AutocompleteInput({
     }
   }, [focusedOptionIndex, showDropdown]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+
+    if (id === 'name') {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      if (newValue.length >= 2) {
+        setIsLoading(true);
+        debounceTimerRef.current = setTimeout(() => {
+          if (socketRef.current?.connected) {
+            socketRef.current.emit('search', { prefix: newValue });
+          }
+        }, 150); // Debounce delay
+      } else {
+        setSearchResults([]);
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleOptionSelect = (option: string) => {
+    onOptionSelect(option);
+    
+    if (id === 'name') {
+      const selectedCandidate = searchResults.find(r => r['Candidate Name'] === option);
+      if (selectedCandidate) {
+        const event = new CustomEvent('candidateSelected', {
+          detail: {
+            email: selectedCandidate['Email ID'] || '',
+            phone: selectedCandidate['Contact No'] || '',
+            gender: selectedCandidate['Gender'] || '',
+            technology: selectedCandidate['Technology'] || ''
+          }
+        });
+        window.dispatchEvent(event);
+      }
+    }
+  };
+
+  const displayOptions = id === 'name' 
+    ? searchResults.map(r => r['Candidate Name'])
+    : options.filter(option => 
+        option.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!filteredOptions.length) return;
+    if (!displayOptions.length) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setFocusedOptionIndex(prev =>
-          prev < filteredOptions.length - 1 ? prev + 1 : prev
+          prev < displayOptions.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
@@ -61,7 +136,7 @@ export function AutocompleteInput({
       case 'Enter':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(filteredOptions[focusedOptionIndex]);
+          handleOptionSelect(displayOptions[focusedOptionIndex]);
           setShowDropdown(false);
           setFocusedOptionIndex(-1);
         }
@@ -74,13 +149,13 @@ export function AutocompleteInput({
       case 'Tab':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(filteredOptions[focusedOptionIndex]);
+          handleOptionSelect(displayOptions[focusedOptionIndex]);
         }
         setShowDropdown(false);
         setFocusedOptionIndex(-1);
         break;
     }
-  }, [filteredOptions, focusedOptionIndex, onOptionSelect]);
+  }, [displayOptions, focusedOptionIndex, handleOptionSelect]);
 
   return (
     <div className="relative">
@@ -99,16 +174,14 @@ export function AutocompleteInput({
             focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
             transition-all duration-200 ${className}`}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleInputChange}
           onFocus={() => {
             setShowDropdown(true);
-            // Preselect first option if there's a value
-            if (value && filteredOptions.length > 0) {
+            if (value && displayOptions.length > 0) {
               setFocusedOptionIndex(0);
             }
           }}
           onBlur={() => {
-            // Delay to allow clicks on options
             setTimeout(() => setShowDropdown(false), 150);
           }}
           onKeyDown={handleKeyDown}
@@ -121,7 +194,7 @@ export function AutocompleteInput({
           }
         />
         
-        {showDropdown && filteredOptions.length > 0 && (
+        {showDropdown && (isLoading || displayOptions.length > 0) && (
           <ul
             ref={dropdownRef}
             id={`${id}-listbox`}
@@ -129,23 +202,27 @@ export function AutocompleteInput({
               overflow-auto focus:outline-none sm:text-sm animate-fadeIn"
             role="listbox"
           >
-            {filteredOptions.map((option, index) => (
-              <li
-                key={option}
-                id={`${id}-option-${index}`}
-                className={`cursor-pointer select-none relative py-2 pl-3 pr-9 transition-colors duration-150
-                  ${index === focusedOptionIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900 hover:bg-gray-50'}`}
-                role="option"
-                aria-selected={index === focusedOptionIndex}
-                onClick={() => {
-                  onOptionSelect(option);
-                  setShowDropdown(false);
-                  setFocusedOptionIndex(-1);
-                }}
-              >
-                {option}
-              </li>
-            ))}
+            {isLoading ? (
+              <li className="px-3 py-2 text-sm text-gray-500">Loading...</li>
+            ) : (
+              displayOptions.map((option, index) => (
+                <li
+                  key={option}
+                  id={`${id}-option-${index}`}
+                  className={`cursor-pointer select-none relative py-2 pl-3 pr-9 transition-colors duration-150
+                    ${index === focusedOptionIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900 hover:bg-gray-50'}`}
+                  role="option"
+                  aria-selected={index === focusedOptionIndex}
+                  onClick={() => {
+                    handleOptionSelect(option);
+                    setShowDropdown(false);
+                    setFocusedOptionIndex(-1);
+                  }}
+                >
+                  {option}
+                </li>
+              ))
+            )}
           </ul>
         )}
       </div>
