@@ -9,6 +9,8 @@ export type TabId = 'new' | 'scheduled';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+export type AssessmentType = 0 | 1 | 2; // 0=Technical, 1=Non-Technical, 2=Unknown
+
 /**
  * FormData represents the fields captured by the CandidateForm.
  * Fields marked optional (?) are only required for specific task types.
@@ -30,8 +32,11 @@ export interface FormData {
   jobTitle?: string;
   interviewDateTime?: string;
   
-  // Assessment-specific field
+  // Assessment-specific fields
   assessmentDeadline?: string;
+  deadlineNotMentioned?: boolean;
+  assessmentType?: AssessmentType;
+  screeningDone?: boolean;
   
   // Mock interview fields
   availabilityDateTime?: string;

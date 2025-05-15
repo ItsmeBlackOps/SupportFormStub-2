@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Save } from 'lucide-react';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
-import { FormData, AutocompleteData } from '../types';
+import { FormData, AutocompleteData, AssessmentType } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
+import { Modal } from './Modal';
 
 interface CandidateFormProps {
   formData: FormData;
@@ -21,6 +22,8 @@ export default function CandidateFormContainer({
   onSubmit,
   isEditing
 }: CandidateFormProps) {
+  const [showAssessmentTypeModal, setShowAssessmentTypeModal] = useState(false);
+
   const updateField = (field: keyof FormData, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -42,7 +45,52 @@ export default function CandidateFormContainer({
       mockMode: undefined,
       remarks: '',
       duration: '60',
+      deadlineNotMentioned: false,
+      assessmentType: undefined,
+      screeningDone: false,
     });
+  };
+
+  const handleDeadlineNotMentioned = (checked: boolean) => {
+    if (checked) {
+      setShowAssessmentTypeModal(true);
+    } else {
+      updateField('deadlineNotMentioned', false);
+      updateField('assessmentType', undefined);
+      updateField('assessmentDeadline', '');
+    }
+  };
+
+  const handleAssessmentTypeSelect = (type: AssessmentType) => {
+    const now = new Date();
+    const deadline = new Date(now);
+    
+    // Set timezone to New York
+    const nyTime = now.toLocaleString("en-US", { timeZone: "America/New_York" });
+    const nyDate = new Date(nyTime);
+    
+    // Add days based on type
+    if (type === 1) { // Non-Technical
+      deadline.setDate(nyDate.getDate() + 3);
+    } else { // Technical or Unknown
+      deadline.setDate(nyDate.getDate() + 7);
+    }
+
+    updateField('deadlineNotMentioned', true);
+    updateField('assessmentType', type);
+    updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
+    setShowAssessmentTypeModal(false);
+  };
+
+  const handleScreeningDone = (checked: boolean) => {
+    if (checked) {
+      const deadline = new Date();
+      const nyTime = deadline.toLocaleString("en-US", { timeZone: "America/New_York" });
+      const nyDate = new Date(nyTime);
+      deadline.setDate(nyDate.getDate() + 3);
+      updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
+    }
+    updateField('screeningDone', checked);
   };
 
   return (
@@ -229,20 +277,50 @@ export default function CandidateFormContainer({
 
           {formData.taskType === 'assessment' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label htmlFor="assessmentDeadline" className="block text-sm font-medium text-gray-700">
-                  Assessment Deadline (EDT)
-                </label>
-                <input
-                  type="date"
-                  id="assessmentDeadline"
-                  value={formData.assessmentDeadline || ''}
-                  required
-                  onChange={(e) => updateField('assessmentDeadline', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="deadlineNotMentioned"
+                    checked={formData.deadlineNotMentioned}
+                    onChange={(e) => handleDeadlineNotMentioned(e.target.checked)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="deadlineNotMentioned" className="text-sm font-medium text-gray-700">
+                    Deadline Not Mentioned
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="screeningDone"
+                    checked={formData.screeningDone}
+                    onChange={(e) => handleScreeningDone(e.target.checked)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="screeningDone" className="text-sm font-medium text-gray-700">
+                    Screening Done
+                  </label>
+                </div>
+
+                {!formData.deadlineNotMentioned && (
+                  <div>
+                    <label htmlFor="assessmentDeadline" className="block text-sm font-medium text-gray-700">
+                      Assessment Deadline (EDT)
+                    </label>
+                    <input
+                      type="date"
+                      id="assessmentDeadline"
+                      value={formData.assessmentDeadline || ''}
+                      required={!formData.deadlineNotMentioned}
+                      onChange={(e) => updateField('assessmentDeadline', e.target.value)}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+                        focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                        transition-colors duration-200"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
@@ -383,6 +461,33 @@ export default function CandidateFormContainer({
           </button>
         </div>
       </form>
+
+      <Modal
+        isOpen={showAssessmentTypeModal}
+        onClose={() => setShowAssessmentTypeModal(false)}
+        title="Select Assessment Type"
+      >
+        <div className="space-y-4">
+          <button
+            onClick={() => handleAssessmentTypeSelect(0)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            0 - Technical
+          </button>
+          <button
+            onClick={() => handleAssessmentTypeSelect(1)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            1 - Non-Technical
+          </button>
+          <button
+            onClick={() => handleAssessmentTypeSelect(2)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+          >
+            2 - Unknown
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
