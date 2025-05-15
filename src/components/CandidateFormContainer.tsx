@@ -23,6 +23,12 @@ export default function CandidateFormContainer({
 }: CandidateFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const capitalizeWords = (str: string) => {
+    return str.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const validateField = (field: string, value: string): string => {
     switch (field) {
       case 'email':
@@ -50,6 +56,11 @@ export default function CandidateFormContainer({
   };
 
   const updateField = (field: keyof FormData, value: any) => {
+    // Apply capitalization to specific fields
+    if (['technology', 'endClient', 'jobTitle'].includes(field)) {
+      value = capitalizeWords(value);
+    }
+
     if (field === 'phone') {
       // Remove all non-numeric characters except + symbol
       let cleaned = value.replace(/[^\d+]/g, '');
@@ -178,8 +189,8 @@ export default function CandidateFormContainer({
               label="Full Name"
               value={formData.name}
               options={[...autocompleteData.names]}
-              onChange={(value) => updateField('name', value)}
-              onOptionSelect={(value) => updateField('name', value)}
+              onChange={(value) => updateField('name', capitalizeWords(value))}
+              onOptionSelect={(value) => updateField('name', capitalizeWords(value))}
               required
             />
 
