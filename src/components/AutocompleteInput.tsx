@@ -34,24 +34,28 @@ export function AutocompleteInput({
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize socket connection
-    socketRef.current = io('https://mongo.tunn.dev', {
-      transports: ['websocket', 'polling'],
-      withCredentials: false
-    });
+    if (id === 'name') {
+      socketRef.current = io('https://mongo.tunn.dev', {
+        transports: ['websocket', 'polling'],
+        withCredentials: false
+      });
 
-    // Listen for search responses
-    socketRef.current.on('search_response', (data: any[]) => {
-      const names = data.map(item => item['Candidate Name']).filter(Boolean);
-      setSearchResults(names);
-    });
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected:', socketRef.current.id);
+      });
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
+      socketRef.current.on('search_response', (data: any[]) => {
+        const names = data.map(item => item['Candidate Name']).filter(Boolean);
+        setSearchResults(names);
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+        }
+      };
+    }
+  }, [id]);
 
   // Scroll active option into view
   useEffect(() => {
@@ -67,24 +71,23 @@ export function AutocompleteInput({
     const newValue = e.target.value;
     onChange(newValue);
 
-    // Emit search event when input changes
-    if (id === 'name' && newValue.length >= 2) {
-      socketRef.current?.emit('search', { query: newValue });
+    if (id === 'name' && newValue.length >= 2 && socketRef.current) {
+      socketRef.current.emit('search', { prefix: newValue });
     }
   };
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const filteredOptions = id === 'name' ? searchResults : options.filter(option => 
-      option.toLowerCase().includes(value.toLowerCase())
-    ).slice(0, 5);
+  const displayOptions = id === 'name' 
+    ? searchResults 
+    : options.filter(option => option.toLowerCase().includes(value.toLowerCase())).slice(0, 5);
 
-    if (!filteredOptions.length) return;
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!displayOptions.length) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setFocusedOptionIndex(prev =>
-          prev < filteredOptions.length - 1 ? prev + 1 : prev
+          prev < displayOptions.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
@@ -94,7 +97,7 @@ export function AutocompleteInput({
       case 'Enter':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(filteredOptions[focusedOptionIndex]);
+          onOptionSelect(displayOptions[focusedOptionIndex]);
           setShowDropdown(false);
           setFocusedOptionIndex(-1);
         }
@@ -107,17 +110,13 @@ export function AutocompleteInput({
       case 'Tab':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(filteredOptions[focusedOptionIndex]);
+          onOptionSelect(displayOptions[focusedOptionIndex]);
         }
         setShowDropdown(false);
         setFocusedOptionIndex(-1);
         break;
     }
-  }, [id, searchResults, options, value, focusedOptionIndex, onOptionSelect]);
-
-  const displayOptions = id === 'name' ? searchResults : options.filter(option =>
-    option.toLowerCase().includes(value.toLowerCase())
-  ).slice(0, 5);
+  }, [displayOptions, focusedOptionIndex, onOptionSelect]);
 
   return (
     <div className="relative">
