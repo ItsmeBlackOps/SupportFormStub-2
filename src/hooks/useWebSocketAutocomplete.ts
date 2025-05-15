@@ -7,12 +7,13 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
   useEffect(() => {
     // Create Socket.IO connection with CORS configuration
-    socketRef.current = io('https://mongo.tunn.dev', {
-      transports: ['websocket'],
-      withCredentials: true,
-      extraHeaders: {
-        'Access-Control-Allow-Origin': '*'
-      }
+    socketRef.current = io('https://myapp.tunnelto.dev', {
+      transports: ['websocket', 'polling'],
+      withCredentials: false,
+      forceNew: true,
+      reconnectionAttempts: 5,
+      timeout: 10000,
+      path: '/socket.io'
     });
 
     // Connection opened
@@ -52,6 +53,11 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
     // Handle errors
     socketRef.current.on('error', (error) => {
       console.error('Socket error:', error);
+    });
+
+    // Handle connection errors
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Connection error:', error);
     });
 
     // Cleanup on unmount
