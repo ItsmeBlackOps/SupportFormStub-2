@@ -9,6 +9,7 @@ import { EmptyState } from './components/EmptyState';
 import { useToast } from './hooks/useToast';
 import { useImagePaste } from './hooks/useImagePaste';
 import { useAutocompleteData } from './hooks/useAutocompleteData';
+import { useWebSocketAutocomplete } from './hooks/useWebSocketAutocomplete';
 import type { FormData, Candidate, TabId } from './types';
 import { INITIAL_FORM_DATA } from './constants';
 
@@ -24,6 +25,9 @@ export default function App() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
+
+  // Initialize WebSocket connection
+  useWebSocketAutocomplete(setFormData);
 
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
