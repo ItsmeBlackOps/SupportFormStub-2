@@ -93,6 +93,18 @@ export function DetailModal({
 
   const copyTableFormat = () => {
     const tempDiv = document.createElement('div');
+    
+    // Add GIF image if screening is done for assessment
+    if (candidate.taskType === 'assessment' && candidate.screeningDone) {
+      const img = document.createElement('img');
+      img.src = 'https://media.tenor.com/yhAAYQqxbcgAAAAi/little-pills.gif';
+      img.alt = 'Screening Done';
+      img.style.width = '32px';
+      img.style.height = '32px';
+      img.style.marginBottom = '16px';
+      tempDiv.appendChild(img);
+    }
+
     const table = document.createElement('table');
     table.style.borderCollapse = 'collapse';
     table.style.width = 'auto';
