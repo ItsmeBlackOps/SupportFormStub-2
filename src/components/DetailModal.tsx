@@ -67,6 +67,10 @@ export function DetailModal({
     case 'assessment':
       rows.push(
         { label: 'Assessment Deadline', value: formatDate(candidate.assessmentDeadline) },
+        { label: 'Assessment Type', value: candidate.assessmentType === 0 ? 'Technical' : 
+                                        candidate.assessmentType === 1 ? 'Non-Technical' : 
+                                        candidate.assessmentType === 2 ? 'Unknown' : '-' },
+        { label: 'Screening Status', value: candidate.screeningDone ? 'Done' : 'Pending' },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
       break;
@@ -202,6 +206,16 @@ export function DetailModal({
                 </button>
               </div>
               <div className="flex-1 min-w-0 space-y-6">
+                {candidate.taskType === 'assessment' && candidate.screeningDone && (
+                  <div className="flex items-center justify-center bg-gray-50 p-4 rounded-lg">
+                    <img 
+                      src="https://media.tenor.com/yhAAYQqxbcgAAAAi/little-pills.gif" 
+                      alt="Screening Done" 
+                      className="h-8 w-8"
+                    />
+                  </div>
+                )}
+
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse border border-black text-black border-spacing-0">
                     <tbody>
