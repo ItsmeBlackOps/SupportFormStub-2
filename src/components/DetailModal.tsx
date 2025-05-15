@@ -15,7 +15,7 @@ export function DetailModal({
   formatDateTime,
   formatDate,
 }: DetailModalProps) {
-  const [copySuccess, setCopySuccess] = React.useState<'table' | 'subject' | null>(null);
+  const [copySuccess, setCopySuccess] = React.useState<'table' | 'subject' | 'gif' | null>(null);
 
   // Helper to capitalize first letter of each word
   const capitalizeWords = (str: string) => {
@@ -152,6 +152,12 @@ export function DetailModal({
     setTimeout(() => setCopySuccess(null), 2000);
   };
 
+  const copyGifUrl = () => {
+    navigator.clipboard.writeText('https://media.tenor.com/yhAAYQqxbcgAAAAi/little-pills.gif');
+    setCopySuccess('gif');
+    setTimeout(() => setCopySuccess(null), 2000);
+  };
+
   return (
     <div className="fixed inset-0 overflow-y-auto z-50 animate-fadeIn">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -206,12 +212,24 @@ export function DetailModal({
               </div>
               <div className="flex-1 min-w-0 space-y-6">
                 {candidate.taskType === 'assessment' && candidate.screeningDone && (
-                  <div className="flex items-center justify-center bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-center bg-gray-50 p-4 rounded-lg relative group">
                     <img 
                       src="https://media.tenor.com/yhAAYQqxbcgAAAAi/little-pills.gif" 
                       alt="Screening Done" 
                       className="h-8 w-8"
                     />
+                    <button
+                      onClick={copyGifUrl}
+                      className="absolute -top-2 -right-2 p-1.5 bg-white hover:bg-gray-100 rounded-full 
+                                transition-colors shadow-sm opacity-0 group-hover:opacity-100"
+                      title="Copy GIF URL"
+                    >
+                      {copySuccess === 'gif' ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
                   </div>
                 )}
 
