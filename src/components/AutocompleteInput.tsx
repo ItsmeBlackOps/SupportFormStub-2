@@ -28,7 +28,7 @@ export function AutocompleteInput({
 }: AutocompleteInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState<number>(-1);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const socketRef = useRef<any>(null);
@@ -45,8 +45,7 @@ export function AutocompleteInput({
       });
 
       socketRef.current.on('search_response', (data: any[]) => {
-        const names = data.map(item => item['Candidate Name']).filter(Boolean);
-        setSearchResults(names);
+        setSearchResults(data);
       });
 
       return () => {
@@ -76,8 +75,28 @@ export function AutocompleteInput({
     }
   };
 
+  const handleOptionSelect = (option: string) => {
+    onOptionSelect(option);
+    
+    if (id === 'name') {
+      const selectedCandidate = searchResults.find(r => r['Candidate Name'] === option);
+      if (selectedCandidate) {
+        // Dispatch a custom event to update other fields
+        const event = new CustomEvent('candidateSelected', {
+          detail: {
+            email: selectedCandidate['Email ID'] || '',
+            phone: selectedCandidate['Contact No'] || '',
+            gender: selectedCandidate['Gender'] || '',
+            technology: selectedCandidate['Technology'] || ''
+          }
+        });
+        window.dispatchEvent(event);
+      }
+    }
+  };
+
   const displayOptions = id === 'name' 
-    ? searchResults 
+    ? searchResults.map(r => r['Candidate Name'])
     : options.filter(option => option.toLowerCase().includes(value.toLowerCase())).slice(0, 5);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -97,7 +116,7 @@ export function AutocompleteInput({
       case 'Enter':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(displayOptions[focusedOptionIndex]);
+          handleOptionSelect(displayOptions[focusedOptionIndex]);
           setShowDropdown(false);
           setFocusedOptionIndex(-1);
         }
@@ -110,13 +129,13 @@ export function AutocompleteInput({
       case 'Tab':
         if (focusedOptionIndex >= 0) {
           e.preventDefault();
-          onOptionSelect(displayOptions[focusedOptionIndex]);
+          handleOptionSelect(displayOptions[focusedOptionIndex]);
         }
         setShowDropdown(false);
         setFocusedOptionIndex(-1);
         break;
     }
-  }, [displayOptions, focusedOptionIndex, onOptionSelect]);
+  }, [displayOptions, focusedOptionIndex, handleOptionSelect]);
 
   return (
     <div className="relative">
@@ -172,7 +191,7 @@ export function AutocompleteInput({
                 role="option"
                 aria-selected={index === focusedOptionIndex}
                 onClick={() => {
-                  onOptionSelect(option);
+                  handleOptionSelect(option);
                   setShowDropdown(false);
                   setFocusedOptionIndex(-1);
                 }}

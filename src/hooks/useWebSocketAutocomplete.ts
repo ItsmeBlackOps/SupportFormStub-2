@@ -8,6 +8,26 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
   const maxRetries = 5;
   const baseDelay = 1000; // Start with 1 second delay
 
+  useEffect(() => {
+    // Listen for candidate selection events
+    const handleCandidateSelected = (event: CustomEvent) => {
+      const { email, phone, gender, technology } = event.detail;
+      setFormData(prev => ({
+        ...prev,
+        email,
+        phone,
+        gender,
+        technology
+      }));
+    };
+
+    window.addEventListener('candidateSelected', handleCandidateSelected as EventListener);
+
+    return () => {
+      window.removeEventListener('candidateSelected', handleCandidateSelected as EventListener);
+    };
+  }, [setFormData]);
+
   const connectSocket = () => {
     try {
       // Disconnect existing socket if any
@@ -35,30 +55,6 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
       // Handle disconnection
       socketRef.current.on('disconnect', () => {
         console.log('Socket disconnected');
-      });
-
-      // Listen for search responses
-      socketRef.current.on('search_response', (data) => {
-        try {
-          if (Array.isArray(data) && data.length > 0) {
-            const item = data[0]; // Use the first item from the response
-            setFormData(prev => ({
-              ...prev,
-              name: item["Candidate Name"] || prev.name,
-              phone: item["Contact No"] || prev.phone,
-              email: item["Email ID"] || prev.email,
-              gender: item["Gender"] || prev.gender,
-              technology: item["Technology"] || prev.technology,
-            }));
-
-            // Cache the full objects for later lookup
-            data.forEach(item => {
-              localStorage.setItem(item['Candidate Name'], JSON.stringify(item));
-            });
-          }
-        } catch (error) {
-          console.error('Error processing search response:', error);
-        }
       });
 
       // Handle errors
@@ -102,7 +98,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         socketRef.current.disconnect();
       }
     };
-  }, [retryCount, setFormData]);
+  }, [retryCount]);
 
   return socketRef.current;
 }
