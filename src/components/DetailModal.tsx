@@ -73,18 +73,13 @@ export function DetailModal({
     case 'mock':
       rows.push(
         { label: 'Mode', value: candidate.mockMode || '' },
-        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) },
-        { label: 'Notes', value: candidate.remarks || '' }
+        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) }
       );
       break;
     case 'resumeUnderstanding':
       rows.push(
-        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) },
-        { label: 'Notes', value: candidate.remarks || '' }
+        { label: 'Schedule', value: formatDateTime(candidate.availabilityDateTime) }
       );
-      break;
-    case 'resumeReview':
-      rows.push({ label: 'Notes', value: candidate.remarks || '' });
       break;
   }
 
@@ -92,6 +87,11 @@ export function DetailModal({
     { label: 'Email ID', value: candidate.email },
     { label: 'Contact Number', value: candidate.phone }
   );
+
+  // Add remarks at the end if they exist
+  if (candidate.remarks) {
+    rows.push({ label: 'Remarks', value: candidate.remarks });
+  }
 
   const copyTableFormat = () => {
     const tempDiv = document.createElement('div');
@@ -107,7 +107,7 @@ export function DetailModal({
       [td1, td2].forEach(td => {
         td.style.border = '1px solid black';
         td.style.padding = '8px';
-        td.style.whiteSpace = 'nowrap';
+        td.style.whiteSpace = label === 'Remarks' ? 'normal' : 'nowrap';
         td.style.width = 'auto';
       });
 
@@ -198,10 +198,10 @@ export function DetailModal({
                 <tbody>
                   {rows.map(({ label, value }) => (
                     <tr key={label} className="border-b border-black">
-                      <td className="border border-black p-2 leading-relaxed font-semibold">
+                      <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
                         {label}
                       </td>
-                      <td className={`border border-black p-2 leading-relaxed ${label === 'Notes' ? 'whitespace-pre-wrap' : ''}`}>
+                      <td className={`border border-black p-2 leading-relaxed ${label === 'Remarks' ? 'whitespace-normal' : 'whitespace-nowrap'}`}>
                         {value || '-'}
                       </td>
                     </tr>
