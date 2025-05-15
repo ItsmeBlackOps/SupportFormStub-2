@@ -88,11 +88,6 @@ export function DetailModal({
     { label: 'Contact Number', value: candidate.phone }
   );
 
-  // Add remarks at the end if they exist
-  if (candidate.remarks) {
-    rows.push({ label: 'Remarks', value: candidate.remarks });
-  }
-
   const copyTableFormat = () => {
     const tempDiv = document.createElement('div');
     const table = document.createElement('table');
@@ -107,7 +102,7 @@ export function DetailModal({
       [td1, td2].forEach(td => {
         td.style.border = '1px solid black';
         td.style.padding = '8px';
-        td.style.whiteSpace = label === 'Remarks' ? 'normal' : 'nowrap';
+        td.style.whiteSpace = 'nowrap';
         td.style.width = 'auto';
       });
 
@@ -120,7 +115,17 @@ export function DetailModal({
       table.appendChild(tr);
     });
 
-    tempDiv.appendChild(table);
+    // Add remarks as text after the table if they exist
+    if (candidate.remarks) {
+      const remarksDiv = document.createElement('div');
+      remarksDiv.style.marginTop = '16px';
+      remarksDiv.innerHTML = `<strong>Remarks:</strong>\n${candidate.remarks}`;
+      tempDiv.appendChild(table);
+      tempDiv.appendChild(remarksDiv);
+    } else {
+      tempDiv.appendChild(table);
+    }
+
     document.body.appendChild(tempDiv);
 
     const range = document.createRange();
@@ -180,7 +185,7 @@ export function DetailModal({
             </div>
           </div>
           
-          {/* Details Table */}
+          {/* Content */}
           <div className="p-6">
             <div className="flex items-start space-x-4">
               <button
@@ -194,20 +199,29 @@ export function DetailModal({
                   <Copy className="h-4 w-4 text-gray-400" />
                 )}
               </button>
-              <table className="w-full border-collapse border border-black text-black border-spacing-0">
-                <tbody>
-                  {rows.map(({ label, value }) => (
-                    <tr key={label} className="border-b border-black">
-                      <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
-                        {label}
-                      </td>
-                      <td className={`border border-black p-2 leading-relaxed ${label === 'Remarks' ? 'whitespace-normal' : 'whitespace-nowrap'}`}>
-                        {value || '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="w-full space-y-6">
+                <table className="w-full border-collapse border border-black text-black border-spacing-0">
+                  <tbody>
+                    {rows.map(({ label, value }) => (
+                      <tr key={label} className="border-b border-black">
+                        <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
+                          {label}
+                        </td>
+                        <td className="border border-black p-2 leading-relaxed whitespace-nowrap">
+                          {value || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {candidate.remarks && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Remarks</h4>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{candidate.remarks}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
