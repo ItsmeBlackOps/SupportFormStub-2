@@ -7,8 +7,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
   useEffect(() => {
     // Create Socket.IO connection with CORS configuration
-    socketRef.current = io('https://mongo
-.tunn.dev', {
+    socketRef.current = io('https://mongo.tunn.dev', {
       transports: ['websocket', 'polling'],
       withCredentials: false,
       forceNew: true,
