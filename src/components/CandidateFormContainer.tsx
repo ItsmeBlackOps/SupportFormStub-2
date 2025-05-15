@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Code, Users, HelpCircle } from 'lucide-react';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
@@ -464,27 +464,42 @@ export default function CandidateFormContainer({
 
       <Modal
         isOpen={showAssessmentTypeModal}
-        onClose={() => setShowAssessmentTypeModal(false)}
+        onClose={() => {
+          setShowAssessmentTypeModal(false);
+          updateField('deadlineNotMentioned', false);
+        }}
         title="Select Assessment Type"
       >
         <div className="space-y-4">
           <button
             onClick={() => handleAssessmentTypeSelect(0)}
-            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            0 - Technical
+            <Code className="h-5 w-5 text-indigo-500" />
+            <div className="text-left">
+              <div className="font-medium">Technical</div>
+              <div className="text-sm text-gray-500">7 days deadline</div>
+            </div>
           </button>
           <button
             onClick={() => handleAssessmentTypeSelect(1)}
-            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            1 - Non-Technical
+            <Users className="h-5 w-5 text-green-500" />
+            <div className="text-left">
+              <div className="font-medium">Non-Technical</div>
+              <div className="text-sm text-gray-500">3 days deadline</div>
+            </div>
           </button>
           <button
             onClick={() => handleAssessmentTypeSelect(2)}
-            className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg"
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            2 - Unknown
+            <HelpCircle className="h-5 w-5 text-amber-500" />
+            <div className="text-left">
+              <div className="font-medium">Unknown</div>
+              <div className="text-sm text-gray-500">7 days deadline</div>
+            </div>
           </button>
         </div>
       </Modal>
