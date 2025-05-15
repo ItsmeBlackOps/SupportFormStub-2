@@ -22,6 +22,27 @@ export default function CandidateFormContainer({
   isEditing
 }: CandidateFormProps) {
   const updateField = (field: keyof FormData, value: any) => {
+    if (field === 'phone') {
+      // Remove all non-numeric characters except + symbol
+      let cleaned = value.replace(/[^\d+]/g, '');
+      
+      // Handle country code
+      if (cleaned.startsWith('+44')) {
+        // Convert +44 to +1 format
+        cleaned = '+1' + cleaned.slice(3);
+      } else if (!cleaned.startsWith('+')) {
+        // Add +1 if no country code
+        cleaned = '+1' + cleaned;
+      }
+      
+      // Format the number
+      if (cleaned.length >= 11) { // +1 plus 10 digits
+        const match = cleaned.match(/^\+1(\d{3})(\d{3})(\d{4})/);
+        if (match) {
+          value = `+1 (${match[1]}) ${match[2]}-${match[3]}`;
+        }
+      }
+    }
     setFormData({ ...formData, [field]: value });
   };
   
@@ -136,7 +157,7 @@ export default function CandidateFormContainer({
               id="phone"
               label="Contact Number"
               type="tel"
-              pattern="[0-9\s-()]+"
+              pattern="^\+[1-9]\d{0,3}\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
               value={formData.phone}
               options={[...autocompleteData.phones]}
               onChange={(value) => updateField('phone', value)}
