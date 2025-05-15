@@ -21,6 +21,34 @@ export default function CandidateFormContainer({
   onSubmit,
   isEditing
 }: CandidateFormProps) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'email':
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        break;
+      case 'technology':
+        if (!/^[a-zA-Z0-9\s\/.+#-]+$/.test(value)) {
+          return 'Technology can only contain letters, numbers, spaces, and basic punctuation';
+        }
+        break;
+      case 'endClient':
+        if (value && !/^[a-zA-Z0-9\s&.,'-]+$/.test(value)) {
+          return 'Company name can only contain letters, numbers, spaces, and basic punctuation';
+        }
+        break;
+      case 'jobTitle':
+        if (value && !/^[a-zA-Z0-9\s&.,'-]+$/.test(value)) {
+          return 'Job title can only contain letters, numbers, spaces, and basic punctuation';
+        }
+        break;
+    }
+    return '';
+  };
+
   const updateField = (field: keyof FormData, value: any) => {
     if (field === 'phone') {
       // Remove all non-numeric characters except + symbol
@@ -43,6 +71,16 @@ export default function CandidateFormContainer({
         }
       }
     }
+
+    // Validate fields that require validation
+    if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
+      const error = validateField(field, value);
+      setErrors(prev => ({
+        ...prev,
+        [field]: error
+      }));
+    }
+
     setFormData({ ...formData, [field]: value });
   };
   
@@ -65,6 +103,7 @@ export default function CandidateFormContainer({
       duration: '60',
       screeningDone: false,
     });
+    setErrors({});
   };
 
   const handleScreeningDone = (checked: boolean) => {
@@ -78,9 +117,41 @@ export default function CandidateFormContainer({
     updateField('screeningDone', checked);
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate all required fields before submission
+    const newErrors: Record<string, string> = {};
+    
+    // Always validate email and technology
+    newErrors.email = validateField('email', formData.email);
+    newErrors.technology = validateField('technology', formData.technology);
+    
+    // Validate conditional fields
+    if (['interview', 'assessment', 'mock'].includes(formData.taskType) && formData.endClient) {
+      newErrors.endClient = validateField('endClient', formData.endClient);
+    }
+    
+    if (formData.taskType === 'interview' && formData.jobTitle) {
+      newErrors.jobTitle = validateField('jobTitle', formData.jobTitle);
+    }
+    
+    // Filter out empty error messages
+    const finalErrors = Object.fromEntries(
+      Object.entries(newErrors).filter(([_, value]) => value !== '')
+    );
+    
+    setErrors(finalErrors);
+    
+    // Only proceed if there are no errors
+    if (Object.keys(finalErrors).length === 0) {
+      onSubmit(e);
+    }
+  };
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-      <form onSubmit={onSubmit} className="p-6">
+      <form onSubmit={handleSubmit} className="p-6">
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {(Object.keys(TASK_TYPE_LABELS) as Array<keyof typeof TASK_TYPE_LABELS>).map((type) => (
@@ -131,27 +202,36 @@ export default function CandidateFormContainer({
               </select>
             </div>
 
-            <AutocompleteInput
-              id="technology"
-              label="Technology / Skill"
-              value={formData.technology}
-              options={[...autocompleteData.technologies]}
-              onChange={(value) => updateField('technology', value)}
-              onOptionSelect={(value) => updateField('technology', value)}
-              required
-            />
+            <div className="relative">
+              <AutocompleteInput
+                id="technology"
+                label="Technology / Skill"
+                value={formData.technology}
+                options={[...autocompleteData.technologies]}
+                onChange={(value) => updateField('technology', value)}
+                onOptionSelect={(value) => updateField('technology', value)}
+                required
+              />
+              {errors.technology && (
+                <p className="mt-1 text-sm text-red-600">{errors.technology}</p>
+              )}
+            </div>
 
-            <AutocompleteInput
-              id="email"
-              label="Email Address"
-              type="email"
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-              value={formData.email}
-              options={[...autocompleteData.emails]}
-              onChange={(value) => updateField('email', value)}
-              onOptionSelect={(value) => updateField('email', value)}
-              required
-            />
+            <div className="relative">
+              <AutocompleteInput
+                id="email"
+                label="Email Address"
+                type="email"
+                value={formData.email}
+                options={[...autocompleteData.emails]}
+                onChange={(value) => updateField('email', value)}
+                onOptionSelect={(value) => updateField('email', value)}
+                required
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
 
             <AutocompleteInput
               id="phone"
@@ -166,7 +246,7 @@ export default function CandidateFormContainer({
             />
 
             {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
-              <div>
+              <div className="relative">
                 <label htmlFor="endClient" className="block text-sm font-medium text-gray-700">
                   Client Company
                 </label>
@@ -180,13 +260,16 @@ export default function CandidateFormContainer({
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
+                {errors.endClient && (
+                  <p className="mt-1 text-sm text-red-600">{errors.endClient}</p>
+                )}
               </div>
             )}
           </div>
 
           {formData.taskType === 'interview' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
+              <div className="relative">
                 <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">
                   Job Title
                 </label>
@@ -200,6 +283,9 @@ export default function CandidateFormContainer({
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
+                {errors.jobTitle && (
+                  <p className="mt-1 text-sm text-red-600">{errors.jobTitle}</p>
+                )}
               </div>
 
               <div>
