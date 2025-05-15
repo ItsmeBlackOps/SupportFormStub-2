@@ -201,7 +201,7 @@ export function DetailModal({
                       <td className="border border-black p-2 leading-relaxed font-semibold">
                         {label}
                       </td>
-                      <td className="border border-black p-2 leading-relaxed">
+                      <td className={`border border-black p-2 leading-relaxed ${label === 'Notes' ? 'whitespace-pre-wrap' : ''}`}>
                         {value || '-'}
                       </td>
                     </tr>
