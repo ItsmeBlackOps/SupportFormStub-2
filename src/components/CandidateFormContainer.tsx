@@ -53,7 +53,6 @@ export default function CandidateFormContainer({
 
   const handleDeadlineNotMentioned = (checked: boolean) => {
     if (checked) {
-      updateField('deadlineNotMentioned', true);
       setShowAssessmentTypeModal(true);
     } else {
       updateField('deadlineNotMentioned', false);
@@ -77,13 +76,9 @@ export default function CandidateFormContainer({
       deadline.setDate(nyDate.getDate() + 7);
     }
 
-    setFormData({
-      ...formData,
-      deadlineNotMentioned: true,
-      assessmentType: type,
-      assessmentDeadline: deadline.toISOString().split('T')[0]
-    });
-    
+    updateField('deadlineNotMentioned', true);
+    updateField('assessmentType', type);
+    updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
     setShowAssessmentTypeModal(false);
   };
 
@@ -93,15 +88,9 @@ export default function CandidateFormContainer({
       const nyTime = deadline.toLocaleString("en-US", { timeZone: "America/New_York" });
       const nyDate = new Date(nyTime);
       deadline.setDate(nyDate.getDate() + 3);
-      
-      setFormData({
-        ...formData,
-        screeningDone: checked,
-        assessmentDeadline: deadline.toISOString().split('T')[0]
-      });
-    } else {
-      updateField('screeningDone', checked);
+      updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
     }
+    updateField('screeningDone', checked);
   };
 
   return (
@@ -293,7 +282,7 @@ export default function CandidateFormContainer({
                   <input
                     type="checkbox"
                     id="deadlineNotMentioned"
-                    checked={formData.deadlineNotMentioned || false}
+                    checked={formData.deadlineNotMentioned}
                     onChange={(e) => handleDeadlineNotMentioned(e.target.checked)}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
@@ -306,7 +295,7 @@ export default function CandidateFormContainer({
                   <input
                     type="checkbox"
                     id="screeningDone"
-                    checked={formData.screeningDone || false}
+                    checked={formData.screeningDone}
                     onChange={(e) => handleScreeningDone(e.target.checked)}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
@@ -477,11 +466,7 @@ export default function CandidateFormContainer({
         isOpen={showAssessmentTypeModal}
         onClose={() => {
           setShowAssessmentTypeModal(false);
-          setFormData({
-            ...formData,
-            deadlineNotMentioned: false,
-            assessmentType: undefined
-          });
+          updateField('deadlineNotMentioned', false);
         }}
         title="Select Assessment Type"
       >
