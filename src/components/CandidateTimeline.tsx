@@ -213,12 +213,6 @@ export default function CandidateTimeline({
                                 <Calendar className="h-3 w-3" />
                                 Due: {formatDate(candidate.assessmentDeadline)}
                               </span>
-                              {candidate.assessmentType !== undefined && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
-                                  Type: {candidate.assessmentType === 0 ? 'Technical' : 
-                                        candidate.assessmentType === 1 ? 'Non-Technical' : 'Unknown'}
-                                </span>
-                              )}
                               {candidate.screeningDone && (
                                 <span className="flex items-center gap-1">
                                   <img 

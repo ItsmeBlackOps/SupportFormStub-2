@@ -58,7 +58,7 @@ export function DetailModal({
   switch (candidate.taskType) {
     case 'interview':
       rows.push(
-        { label: 'Job Title in JD', value: candidate.jobTitle || '' },
+        { label: 'Job Title', value: candidate.jobTitle || '' },
         { label: 'Interview Round', value: candidate.interviewRound || '' },
         { label: 'Date and Time of Interview (EST)', value: formatDateTime(candidate.interviewDateTime) },
         { label: 'Duration', value: `${candidate.duration} minutes` }
@@ -67,12 +67,11 @@ export function DetailModal({
     case 'assessment':
       rows.push(
         { label: 'Assessment Deadline', value: formatDate(candidate.assessmentDeadline) },
-        { label: 'Assessment Type', value: candidate.assessmentType === 0 ? 'Technical' : 
-                                        candidate.assessmentType === 1 ? 'Non-Technical' : 
-                                        candidate.assessmentType === 2 ? 'Unknown' : '-' },
-        { label: 'Screening Status', value: candidate.screeningDone ? 'Done' : 'Pending' },
         { label: 'Duration', value: `${candidate.duration} minutes` }
       );
+      if (candidate.screeningDone) {
+        rows.push({ label: 'Screening Status', value: 'Done' });
+      }
       break;
     case 'mock':
       rows.push(
