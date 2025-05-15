@@ -188,17 +188,19 @@ export function DetailModal({
           {/* Content */}
           <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             <div className="flex items-start space-x-4">
-              <button
-                onClick={copyTableFormat}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
-                title="Copy Table"
-              >
-                {copySuccess === 'table' ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4 text-gray-400" />
-                )}
-              </button>
+              <div className="sticky top-0">
+                <button
+                  onClick={copyTableFormat}
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                  title="Copy Table"
+                >
+                  {copySuccess === 'table' ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
               <div className="flex-1 min-w-0 space-y-6">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse border border-black text-black border-spacing-0">
