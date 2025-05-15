@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 interface AutocompleteInputProps {
   id: string;
@@ -27,12 +28,30 @@ export function AutocompleteInput({
 }: AutocompleteInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState<number>(-1);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
+  const socketRef = useRef<any>(null);
 
-  const filteredOptions = options
-    .filter(option => option.toLowerCase().includes(value.toLowerCase()))
-    .slice(0, 5); // Limit to 5 options for better UX
+  useEffect(() => {
+    // Initialize socket connection
+    socketRef.current = io('https://mongo.tunn.dev', {
+      transports: ['websocket', 'polling'],
+      withCredentials: false
+    });
+
+    // Listen for search responses
+    socketRef.current.on('search_response', (data: any[]) => {
+      const names = data.map(item => item['Candidate Name']).filter(Boolean);
+      setSearchResults(names);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
 
   // Scroll active option into view
   useEffect(() => {
@@ -44,7 +63,21 @@ export function AutocompleteInput({
     }
   }, [focusedOptionIndex, showDropdown]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+
+    // Emit search event when input changes
+    if (id === 'name' && newValue.length >= 2) {
+      socketRef.current?.emit('search', { query: newValue });
+    }
+  };
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const filteredOptions = id === 'name' ? searchResults : options.filter(option => 
+      option.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+
     if (!filteredOptions.length) return;
 
     switch (e.key) {
@@ -80,7 +113,11 @@ export function AutocompleteInput({
         setFocusedOptionIndex(-1);
         break;
     }
-  }, [filteredOptions, focusedOptionIndex, onOptionSelect]);
+  }, [id, searchResults, options, value, focusedOptionIndex, onOptionSelect]);
+
+  const displayOptions = id === 'name' ? searchResults : options.filter(option =>
+    option.toLowerCase().includes(value.toLowerCase())
+  ).slice(0, 5);
 
   return (
     <div className="relative">
@@ -99,16 +136,14 @@ export function AutocompleteInput({
             focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
             transition-all duration-200 ${className}`}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleInputChange}
           onFocus={() => {
             setShowDropdown(true);
-            // Preselect first option if there's a value
-            if (value && filteredOptions.length > 0) {
+            if (value && displayOptions.length > 0) {
               setFocusedOptionIndex(0);
             }
           }}
           onBlur={() => {
-            // Delay to allow clicks on options
             setTimeout(() => setShowDropdown(false), 150);
           }}
           onKeyDown={handleKeyDown}
@@ -121,7 +156,7 @@ export function AutocompleteInput({
           }
         />
         
-        {showDropdown && filteredOptions.length > 0 && (
+        {showDropdown && displayOptions.length > 0 && (
           <ul
             ref={dropdownRef}
             id={`${id}-listbox`}
@@ -129,7 +164,7 @@ export function AutocompleteInput({
               overflow-auto focus:outline-none sm:text-sm animate-fadeIn"
             role="listbox"
           >
-            {filteredOptions.map((option, index) => (
+            {displayOptions.map((option, index) => (
               <li
                 key={option}
                 id={`${id}-option-${index}`}
