@@ -156,7 +156,7 @@ export function DetailModal({
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl 
-                    transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-start">
@@ -172,7 +172,7 @@ export function DetailModal({
                     <Copy className="h-4 w-4 text-gray-400" />
                   )}
                 </button>
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-gray-900 truncate max-w-xl">
                   {getTitle()}
                 </h3>
               </div>
@@ -186,11 +186,11 @@ export function DetailModal({
           </div>
           
           {/* Content */}
-          <div className="p-6">
+          <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             <div className="flex items-start space-x-4">
               <button
                 onClick={copyTableFormat}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 mt-1"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
                 title="Copy Table"
               >
                 {copySuccess === 'table' ? (
@@ -199,26 +199,28 @@ export function DetailModal({
                   <Copy className="h-4 w-4 text-gray-400" />
                 )}
               </button>
-              <div className="w-full space-y-6">
-                <table className="w-full border-collapse border border-black text-black border-spacing-0">
-                  <tbody>
-                    {rows.map(({ label, value }) => (
-                      <tr key={label} className="border-b border-black">
-                        <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
-                          {label}
-                        </td>
-                        <td className="border border-black p-2 leading-relaxed whitespace-nowrap">
-                          {value || '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="flex-1 min-w-0 space-y-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-black text-black border-spacing-0">
+                    <tbody>
+                      {rows.map(({ label, value }) => (
+                        <tr key={label} className="border-b border-black">
+                          <td className="border border-black p-2 leading-relaxed font-semibold whitespace-nowrap">
+                            {label}
+                          </td>
+                          <td className="border border-black p-2 leading-relaxed">
+                            {value || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
                 {candidate.remarks && (
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="text-sm font-medium text-gray-900 mb-2">Remarks</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{candidate.remarks}</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{candidate.remarks}</p>
                   </div>
                 )}
               </div>
