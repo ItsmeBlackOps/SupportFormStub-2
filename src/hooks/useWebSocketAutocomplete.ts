@@ -1,47 +1,60 @@
 import { useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 import { FormData } from '../types';
 
 export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) {
-  const wsRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // Create WebSocket connection
-    wsRef.current = new WebSocket('wss://mongo.tunn.dev');
+    // Create Socket.IO connection
+    socketRef.current = io('https://myapp.tunnelto.dev');
 
     // Connection opened
-    wsRef.current.addEventListener('open', () => {
-      console.log('Connected to WebSocket server');
+    socketRef.current.on('connect', () => {
+      console.log('Socket connected:', socketRef.current?.id);
     });
 
-    // Listen for messages
-    wsRef.current.addEventListener('message', (event) => {
+    // Handle disconnection
+    socketRef.current.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    // Listen for search responses
+    socketRef.current.on('search_response', (data) => {
       try {
-        const data = JSON.parse(event.data);
-        setFormData(prev => ({
-          ...prev,
-          name: data["Candidate Name"] || prev.name,
-          phone: data["Contact No"] || prev.phone,
-          email: data["Email ID"] || prev.email,
-          gender: data["Gender"] || prev.gender,
-          technology: data["Technology"] || prev.technology,
-        }));
+        if (Array.isArray(data) && data.length > 0) {
+          const item = data[0]; // Use the first item from the response
+          setFormData(prev => ({
+            ...prev,
+            name: item["Candidate Name"] || prev.name,
+            phone: item["Contact No"] || prev.phone,
+            email: item["Email ID"] || prev.email,
+            gender: item["Gender"] || prev.gender,
+            technology: item["Technology"] || prev.technology,
+          }));
+
+          // Cache the full objects for later lookup
+          data.forEach(item => {
+            localStorage.setItem(item['Candidate Name'], JSON.stringify(item));
+          });
+        }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Error processing search response:', error);
       }
     });
 
     // Handle errors
-    wsRef.current.addEventListener('error', (error) => {
-      console.error('WebSocket error:', error);
+    socketRef.current.on('error', (error) => {
+      console.error('Socket error:', error);
     });
 
     // Cleanup on unmount
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
     };
   }, [setFormData]);
 
-  return wsRef.current;
+  return socketRef.current;
 }
