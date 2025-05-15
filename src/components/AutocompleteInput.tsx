@@ -29,15 +29,20 @@ export function AutocompleteInput({
   const [showDropdown, setShowDropdown] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState<number>(-1);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const socketRef = useRef<any>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (id === 'name') {
       socketRef.current = io('https://mongo.tunn.dev', {
-        transports: ['websocket', 'polling'],
-        withCredentials: false
+        transports: ['websocket'],
+        withCredentials: false,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 5000
       });
 
       socketRef.current.on('connect', () => {
@@ -46,6 +51,7 @@ export function AutocompleteInput({
 
       socketRef.current.on('search_response', (data: any[]) => {
         setSearchResults(data);
+        setIsLoading(false);
       });
 
       return () => {
@@ -56,7 +62,6 @@ export function AutocompleteInput({
     }
   }, [id]);
 
-  // Scroll active option into view
   useEffect(() => {
     if (showDropdown && focusedOptionIndex >= 0 && dropdownRef.current) {
       const activeOption = dropdownRef.current.children[focusedOptionIndex] as HTMLElement;
@@ -70,8 +75,22 @@ export function AutocompleteInput({
     const newValue = e.target.value;
     onChange(newValue);
 
-    if (id === 'name' && newValue.length >= 2 && socketRef.current) {
-      socketRef.current.emit('search', { prefix: newValue });
+    if (id === 'name') {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      if (newValue.length >= 2) {
+        setIsLoading(true);
+        debounceTimerRef.current = setTimeout(() => {
+          if (socketRef.current?.connected) {
+            socketRef.current.emit('search', { prefix: newValue });
+          }
+        }, 150); // Debounce delay
+      } else {
+        setSearchResults([]);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -81,7 +100,6 @@ export function AutocompleteInput({
     if (id === 'name') {
       const selectedCandidate = searchResults.find(r => r['Candidate Name'] === option);
       if (selectedCandidate) {
-        // Dispatch a custom event to update other fields
         const event = new CustomEvent('candidateSelected', {
           detail: {
             email: selectedCandidate['Email ID'] || '',
@@ -97,7 +115,9 @@ export function AutocompleteInput({
 
   const displayOptions = id === 'name' 
     ? searchResults.map(r => r['Candidate Name'])
-    : options.filter(option => option.toLowerCase().includes(value.toLowerCase())).slice(0, 5);
+    : options.filter(option => 
+        option.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!displayOptions.length) return;
@@ -174,7 +194,7 @@ export function AutocompleteInput({
           }
         />
         
-        {showDropdown && displayOptions.length > 0 && (
+        {showDropdown && (isLoading || displayOptions.length > 0) && (
           <ul
             ref={dropdownRef}
             id={`${id}-listbox`}
@@ -182,23 +202,27 @@ export function AutocompleteInput({
               overflow-auto focus:outline-none sm:text-sm animate-fadeIn"
             role="listbox"
           >
-            {displayOptions.map((option, index) => (
-              <li
-                key={option}
-                id={`${id}-option-${index}`}
-                className={`cursor-pointer select-none relative py-2 pl-3 pr-9 transition-colors duration-150
-                  ${index === focusedOptionIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900 hover:bg-gray-50'}`}
-                role="option"
-                aria-selected={index === focusedOptionIndex}
-                onClick={() => {
-                  handleOptionSelect(option);
-                  setShowDropdown(false);
-                  setFocusedOptionIndex(-1);
-                }}
-              >
-                {option}
-              </li>
-            ))}
+            {isLoading ? (
+              <li className="px-3 py-2 text-sm text-gray-500">Loading...</li>
+            ) : (
+              displayOptions.map((option, index) => (
+                <li
+                  key={option}
+                  id={`${id}-option-${index}`}
+                  className={`cursor-pointer select-none relative py-2 pl-3 pr-9 transition-colors duration-150
+                    ${index === focusedOptionIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900 hover:bg-gray-50'}`}
+                  role="option"
+                  aria-selected={index === focusedOptionIndex}
+                  onClick={() => {
+                    handleOptionSelect(option);
+                    setShowDropdown(false);
+                    setFocusedOptionIndex(-1);
+                  }}
+                >
+                  {option}
+                </li>
+              ))
+            )}
           </ul>
         )}
       </div>
