@@ -5,11 +5,11 @@ import { FormData } from '../types';
 export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) {
   const socketRef = useRef<Socket | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'failed'>('connecting');
-  const maxRetries = 3; // Reduced from 5 to fail faster
-  const baseDelay = 1000;
+  const maxRetries = 5;
+  const baseDelay = 1000; // Start with 1 second delay
 
   useEffect(() => {
+    // Listen for candidate selection events
     const handleCandidateSelected = (event: CustomEvent) => {
       const { email, phone, gender, technology } = event.detail;
       setFormData(prev => ({
@@ -30,57 +30,54 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
   const connectSocket = () => {
     try {
+      // Disconnect existing socket if any
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
 
-      setConnectionStatus('connecting');
-
+      // Create Socket.IO connection with CORS configuration
       socketRef.current = io('https://mongo.tunn.dev', {
-        transports: ['websocket'], // Only use WebSocket transport
-        withCredentials: false, // Disable credentials to avoid CORS issues
+        transports: ['websocket', 'polling'],
+        withCredentials: false,
         forceNew: true,
-        reconnectionDelay: Math.min(1000 * Math.pow(2, retryCount), 5000), // Cap at 5 seconds
+        reconnectionDelay: Math.min(1000 * Math.pow(2, retryCount), 10000), // Exponential backoff
         reconnectionAttempts: maxRetries - retryCount,
-        timeout: 10000, // Reduced timeout
-        path: '/socket.io',
-        autoConnect: true
+        timeout: 10000,
+        path: '/socket.io'
       });
 
+      // Connection opened
       socketRef.current.on('connect', () => {
-        console.log('Socket connected successfully');
-        setConnectionStatus('connected');
-        setRetryCount(0);
+        console.log('Socket connected:', socketRef.current?.id);
+        setRetryCount(0); // Reset retry count on successful connection
       });
 
-      socketRef.current.on('disconnect', (reason) => {
-        console.log('Socket disconnected:', reason);
-        setConnectionStatus('connecting');
-        
-        if (reason === 'io server disconnect') {
-          socketRef.current?.connect();
-        }
+      // Handle disconnection
+      socketRef.current.on('disconnect', () => {
+        console.log('Socket disconnected');
       });
 
+      // Handle errors
       socketRef.current.on('error', (error) => {
-        console.error('Socket connection error:', error);
+        console.error('Socket error:', error);
         handleReconnect();
       });
 
+      // Handle connection errors
       socketRef.current.on('connect_error', (error) => {
-        console.error('Connection failed:', error.message);
+        console.error('Connection error:', error);
         handleReconnect();
       });
 
     } catch (error) {
-      console.error('Failed to create socket connection:', error);
+      console.error('Error creating socket connection:', error);
       handleReconnect();
     }
   };
 
   const handleReconnect = () => {
     if (retryCount < maxRetries) {
-      const delay = Math.min(baseDelay * Math.pow(2, retryCount), 5000);
+      const delay = Math.min(baseDelay * Math.pow(2, retryCount), 10000); // Exponential backoff with 10s max
       console.log(`Attempting reconnection in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
       
       setTimeout(() => {
@@ -88,14 +85,14 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         connectSocket();
       }, delay);
     } else {
-      console.error('WebSocket connection failed after maximum retry attempts');
-      setConnectionStatus('failed');
+      console.error('Max reconnection attempts reached');
     }
   };
 
   useEffect(() => {
     connectSocket();
 
+    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
@@ -103,5 +100,5 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
     };
   }, [retryCount]);
 
-  return { socket: socketRef.current, connectionStatus };
+  return socketRef.current;
 }
