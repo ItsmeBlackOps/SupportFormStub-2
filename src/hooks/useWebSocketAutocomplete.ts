@@ -35,15 +35,20 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         socketRef.current.disconnect();
       }
 
-      // Create Socket.IO connection with CORS configuration
+      // Create Socket.IO connection with enhanced CORS and connection configuration
       socketRef.current = io('https://mongo.tunn.dev', {
-        transports: ['websocket', 'polling'],
-        withCredentials: false,
+        transports: ['polling', 'websocket'], // Try polling first, then upgrade to WebSocket
+        withCredentials: true, // Enable credentials
         forceNew: true,
-        reconnectionDelay: Math.min(1000 * Math.pow(2, retryCount), 10000), // Exponential backoff
+        reconnectionDelay: Math.min(1000 * Math.pow(2, retryCount), 10000),
         reconnectionAttempts: maxRetries - retryCount,
-        timeout: 10000,
-        path: '/socket.io'
+        timeout: 20000, // Increased timeout
+        path: '/socket.io',
+        extraHeaders: {
+          'Origin': window.location.origin
+        },
+        autoConnect: true,
+        secure: true
       });
 
       // Connection opened
@@ -53,14 +58,20 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
       });
 
       // Handle disconnection
-      socketRef.current.on('disconnect', () => {
-        console.log('Socket disconnected');
+      socketRef.current.on('disconnect', (reason) => {
+        console.log('Socket disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          // Reconnect if the server initiated the disconnect
+          socketRef.current?.connect();
+        }
       });
 
       // Handle errors
       socketRef.current.on('error', (error) => {
         console.error('Socket error:', error);
-        handleReconnect();
+        if (!socketRef.current?.connected) {
+          handleReconnect();
+        }
       });
 
       // Handle connection errors
@@ -77,7 +88,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
   const handleReconnect = () => {
     if (retryCount < maxRetries) {
-      const delay = Math.min(baseDelay * Math.pow(2, retryCount), 10000); // Exponential backoff with 10s max
+      const delay = Math.min(baseDelay * Math.pow(2, retryCount), 10000);
       console.log(`Attempting reconnection in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
       
       setTimeout(() => {
