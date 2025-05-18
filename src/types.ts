@@ -21,6 +21,7 @@ export interface FormData {
   email: string;
   phone: string;
   expert?: string;
+  status?: string;
   
   // Fields for interview and assessment
   endClient?: string;
