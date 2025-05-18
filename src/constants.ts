@@ -16,7 +16,7 @@ export const INITIAL_FORM_DATA: FormData = {
   mockMode: undefined,
   remarks: '',
   duration: '60',
-  expert: false,
+  expert: '',
 };
 
 export const TASK_TYPE_COLORS = {

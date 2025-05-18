@@ -22,7 +22,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
           phone,
           gender,
           technology,
-          expert: expert === 'Yes'
+          expert // Store the actual expert value without conversion
         };
         console.log('Updated form data:', updated);
         return updated;
