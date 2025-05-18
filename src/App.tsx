@@ -10,6 +10,7 @@ import { useToast } from './hooks/useToast';
 import { useImagePaste } from './hooks/useImagePaste';
 import { useAutocompleteData } from './hooks/useAutocompleteData';
 import { useWebSocketAutocomplete } from './hooks/useWebSocketAutocomplete';
+import { useInterviewNotifications } from './hooks/useInterviewNotifications';
 import type { FormData, Candidate, TabId } from './types';
 import { INITIAL_FORM_DATA } from './constants';
 
@@ -27,6 +28,7 @@ export default function App() {
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
   useWebSocketAutocomplete(setFormData);
+  useInterviewNotifications(candidates);
 
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
@@ -39,7 +41,6 @@ export default function App() {
       }
     }
 
-    // Listen for toast events
     const handleToast = (event: CustomEvent) => {
       const { message, type } = event.detail;
       showToast(message, type);
@@ -54,7 +55,6 @@ export default function App() {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
 
-  // Listen for status updates
   useEffect(() => {
     const handleStatusUpdate = (event: CustomEvent) => {
       const { subject, status } = event.detail;
