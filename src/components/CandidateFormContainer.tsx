@@ -56,18 +56,32 @@ export default function CandidateFormContainer({
   };
 
   const formatPhoneNumber = (value: string) => {
-    // Remove all non-numeric characters except + symbol
-    let cleaned = value.replace(/[^\d+]/g, '');
-    
-    // Handle country code
-    if (!cleaned.startsWith('+')) {
-      if (cleaned.startsWith('1')) {
-        cleaned = '+' + cleaned;
-      } else {
-        cleaned = '+1' + cleaned;
-      }
-    }
-    
+  // strip everything except digits and +
+  let cleaned = value.replace(/[^\d+]/g, '');
+
+  // ensure there's a leading +
+  if (!cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+
+  // drop the + for digit logic
+  const digits = cleaned.slice(1);
+
+  // if we have at least 10 “local” digits, treat the last 10 as area+local,
+  // and everything before as the country code:
+  if (digits.length >= 10) {
+    const country = digits.slice(0, digits.length - 10);
+    const area    = digits.slice(-10, -7);
+    const prefix  = digits.slice(-7, -4);
+    const line    = digits.slice(-4);
+
+    return `+${country} (${area}) ${prefix}-${line}`;
+  }
+
+  // fallback: just return what we cleaned
+  return cleaned;
+};
+
     // Format the number
     if (cleaned.length >= 11) { // +1 plus 10 digits
       const match = cleaned.match(/^\+(\d{1})(\d{3})(\d{3})(\d{4})/);
