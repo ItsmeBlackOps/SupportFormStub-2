@@ -9,10 +9,6 @@ export type TabId = 'new' | 'scheduled';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
-/**
- * FormData represents the fields captured by the CandidateForm.
- * Fields marked optional (?) are only required for specific task types.
- */
 export interface FormData {
   taskType: TaskType;
   name: string;
@@ -20,6 +16,9 @@ export interface FormData {
   technology: string;
   email: string;
   phone: string;
+  expert?: string;
+  status?: string;
+  subject?: string;
   
   // Fields for interview and assessment
   endClient?: string;
@@ -40,4 +39,23 @@ export interface FormData {
   
   // Common optional field for remarks
   remarks?: string;
+}
+
+export interface Candidate extends FormData {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AutocompleteData {
+  names: Set<string>;
+  genders: Set<string>;
+  technologies: Set<string>;
+  emails: Set<string>;
+  phones: Set<string>;
+}
+
+export interface Action {
+  label: string;
+  onClick: () => void;
 }

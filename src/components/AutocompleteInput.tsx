@@ -8,6 +8,7 @@ interface AutocompleteInputProps {
   options: readonly string[];
   onChange: (value: string) => void;
   onOptionSelect: (option: string) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   required?: boolean;
   type?: 'text' | 'email' | 'tel';
   pattern?: string;
@@ -21,6 +22,7 @@ export function AutocompleteInput({
   options,
   onChange,
   onOptionSelect,
+  onBlur,
   required = false,
   type = 'text',
   pattern,
@@ -37,6 +39,7 @@ export function AutocompleteInput({
 
   useEffect(() => {
     if (id === 'name') {
+      console.log('Initializing socket for name input');
       socketRef.current = io('https://mongo.tunn.dev', {
         transports: ['websocket'],
         withCredentials: false,
@@ -46,16 +49,18 @@ export function AutocompleteInput({
       });
 
       socketRef.current.on('connect', () => {
-        console.log('Socket connected:', socketRef.current.id);
+        console.log('Socket connected for name input:', socketRef.current.id);
       });
 
       socketRef.current.on('search_response', (data: any[]) => {
+        console.log('Received search response:', data);
         setSearchResults(data);
         setIsLoading(false);
       });
 
       return () => {
         if (socketRef.current) {
+          console.log('Cleaning up name input socket');
           socketRef.current.disconnect();
         }
       };
@@ -84,9 +89,10 @@ export function AutocompleteInput({
         setIsLoading(true);
         debounceTimerRef.current = setTimeout(() => {
           if (socketRef.current?.connected) {
+            console.log('Sending search request:', newValue);
             socketRef.current.emit('search', { prefix: newValue });
           }
-        }, 150); // Debounce delay
+        }, 150);
       } else {
         setSearchResults([]);
         setIsLoading(false);
@@ -100,12 +106,14 @@ export function AutocompleteInput({
     if (id === 'name') {
       const selectedCandidate = searchResults.find(r => r['Candidate Name'] === option);
       if (selectedCandidate) {
+        console.log('Selected candidate data:', selectedCandidate);
         const event = new CustomEvent('candidateSelected', {
           detail: {
             email: selectedCandidate['Email ID'] || '',
             phone: selectedCandidate['Contact No'] || '',
             gender: selectedCandidate['Gender'] || '',
-            technology: selectedCandidate['Technology'] || ''
+            technology: selectedCandidate['Technology'] || '',
+            expert: selectedCandidate['Expert'] || 'No'
           }
         });
         window.dispatchEvent(event);
@@ -181,8 +189,9 @@ export function AutocompleteInput({
               setFocusedOptionIndex(0);
             }
           }}
-          onBlur={() => {
+          onBlur={(e) => {
             setTimeout(() => setShowDropdown(false), 150);
+            onBlur?.(e);
           }}
           onKeyDown={handleKeyDown}
           role="combobox"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Eye,
   Edit2,
@@ -16,7 +16,9 @@ import {
   Search,
   Filter,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Star,
+  CheckCircle2
 } from 'lucide-react';
 import { Candidate, TaskType } from '../types';
 import { TASK_TYPE_COLORS, TASK_TYPE_LABELS } from '../constants';
@@ -47,8 +49,31 @@ export default function CandidateTimeline({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<TaskType[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [localCandidates, setLocalCandidates] = useState(candidates);
 
-  const filteredCandidates = candidates.filter(candidate => {
+  useEffect(() => {
+    setLocalCandidates(candidates);
+  }, [candidates]);
+
+  useEffect(() => {
+    const handleStatusUpdate = (event: CustomEvent) => {
+      const { subject, status } = event.detail;
+      setLocalCandidates(prev => 
+        prev.map(candidate => 
+          candidate.technology === subject
+            ? { ...candidate, status }
+            : candidate
+        )
+      );
+    };
+
+    window.addEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    return () => {
+      window.removeEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    };
+  }, []);
+
+  const filteredCandidates = localCandidates.filter(candidate => {
     const matchesSearch = searchTerm === '' || 
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       candidate.technology.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,6 +138,17 @@ export default function CandidateTimeline({
         ? prev.filter(t => t !== type)
         : [...prev, type]
     );
+  };
+
+  const getStatusColor = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case 'acknowledged':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -189,6 +225,18 @@ export default function CandidateTimeline({
                           <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
                             {candidate.technology}
                           </span>
+                          {candidate.expert && (
+                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+                              <Star className="h-3 w-3" />
+                              {candidate.expert}
+                            </span>
+                          )}
+                          {candidate.status && (
+                            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${getStatusColor(candidate.status)}`}>
+                              <CheckCircle2 className="h-3 w-3" />
+                              {candidate.status}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex flex-wrap gap-3 text-xs text-gray-500">

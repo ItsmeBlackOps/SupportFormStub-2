@@ -26,7 +26,6 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
-  // Initialize WebSocket connection
   useWebSocketAutocomplete(setFormData);
 
   useEffect(() => {
@@ -39,12 +38,40 @@ export default function App() {
         console.error('Failed to parse candidates:', err);
       }
     }
-  }, []);
+
+    // Listen for toast events
+    const handleToast = (event: CustomEvent) => {
+      const { message, type } = event.detail;
+      showToast(message, type);
+    };
+
+    window.addEventListener('showToast', handleToast as EventListener);
+    return () => window.removeEventListener('showToast', handleToast as EventListener);
+  }, [showToast]);
 
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
+
+  // Listen for status updates
+  useEffect(() => {
+    const handleStatusUpdate = (event: CustomEvent) => {
+      const { subject, status } = event.detail;
+      setCandidates(prev => 
+        prev.map(candidate => 
+          candidate.subject === subject
+            ? { ...candidate, status }
+            : candidate
+        )
+      );
+    };
+
+    window.addEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    return () => {
+      window.removeEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    };
+  }, []);
 
   const saveCandidates = (updated: Candidate[]) => {
     setCandidates(updated);
@@ -52,17 +79,40 @@ export default function App() {
     updateAutocompleteData(updated);
   };
 
+  const getSubjectTitle = (candidate: Candidate) => {
+    const name = candidate.name;
+    const tech = candidate.technology;
+    
+    switch (candidate.taskType) {
+      case 'interview':
+        return `Interview Support - ${name} - ${tech} - ${formatDateTime(candidate.interviewDateTime)}`;
+      case 'assessment':
+        return `Assessment Support - ${name} - ${tech} - ${formatDate(candidate.assessmentDeadline)}`;
+      case 'mock':
+        return `Mock Interview - ${name} - ${tech} - ${candidate.mockMode} - ${formatDateTime(candidate.availabilityDateTime)}`;
+      case 'resumeUnderstanding':
+        return `Resume Understanding - ${name} - ${tech} - ${formatDateTime(candidate.availabilityDateTime)}`;
+      case 'resumeReview':
+        return `Resume Making - ${name} - ${tech}`;
+      default:
+        return '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const candidateToSave: Candidate = {
       id: editingCandidate?.id || crypto.randomUUID(),
       ...formData,
+      subject: getSubjectTitle({ ...formData, id: '', createdAt: '', updatedAt: '' }),
       createdAt: editingCandidate?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    
     const updatedList = editingCandidate
       ? candidates.map(c => c.id === editingCandidate.id ? candidateToSave : c)
       : [...candidates, candidateToSave];
+    
     saveCandidates(updatedList);
     setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);

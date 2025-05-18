@@ -55,32 +55,50 @@ export default function CandidateFormContainer({
     return '';
   };
 
+  const formatPhoneNumber = (value: string) => {
+    console.log('Formatting phone number:', value);
+    // strip everything except digits and +
+    let cleaned = value.replace(/[^\d+]/g, '');
+    console.log('Cleaned:', cleaned);
+
+    // ensure there's a leading +
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    console.log('With +:', cleaned);
+
+    // drop the + for digit logic
+    const digits = cleaned.slice(1);
+    console.log('Digits:', digits);
+
+    // if we have at least 10 "local" digits, treat the last 10 as area+local,
+    // and everything before as the country code:
+    if (digits.length >= 10) {
+      const country = digits.slice(0, digits.length - 10);
+      const area    = digits.slice(-10, -7);
+      const prefix  = digits.slice(-7, -4);
+      const line    = digits.slice(-4);
+
+      const formatted = `+${country} (${area}) ${prefix}-${line}`;
+      console.log('Formatted:', formatted);
+      return formatted;
+    }
+
+    // fallback: just return what we cleaned
+    console.log('Fallback:', cleaned);
+    return cleaned;
+  };
+
   const updateField = (field: keyof FormData, value: any) => {
+    console.log('Updating field:', field, 'with value:', value);
+    
     // Apply capitalization to specific fields
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
       value = capitalizeWords(value);
     }
 
     if (field === 'phone') {
-      // Remove all non-numeric characters except + symbol
-      let cleaned = value.replace(/[^\d+]/g, '');
-      
-      // Handle country code
-      if (cleaned.startsWith('+44')) {
-        // Convert +44 to +1 format
-        cleaned = '+1' + cleaned.slice(3);
-      } else if (!cleaned.startsWith('+')) {
-        // Add +1 if no country code
-        cleaned = '+1' + cleaned;
-      }
-      
-      // Format the number
-      if (cleaned.length >= 11) { // +1 plus 10 digits
-        const match = cleaned.match(/^\+1(\d{3})(\d{3})(\d{4})/);
-        if (match) {
-          value = `+1 (${match[1]}) ${match[2]}-${match[3]}`;
-        }
-      }
+      value = formatPhoneNumber(value);
     }
 
     // Validate fields that require validation
@@ -92,7 +110,11 @@ export default function CandidateFormContainer({
       }));
     }
 
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      console.log('Updated form data:', updated);
+      return updated;
+    });
   };
   
   const handleTaskTypeChange = (taskType: string) => {
@@ -113,6 +135,7 @@ export default function CandidateFormContainer({
       remarks: '',
       duration: '60',
       screeningDone: false,
+      expert: formData.expert,
     });
     setErrors({});
   };
@@ -156,6 +179,7 @@ export default function CandidateFormContainer({
     
     // Only proceed if there are no errors
     if (Object.keys(finalErrors).length === 0) {
+      console.log('Submitting form with data:', formData);
       onSubmit(e);
     }
   };
@@ -248,11 +272,15 @@ export default function CandidateFormContainer({
               id="phone"
               label="Contact Number"
               type="tel"
-              pattern="^\+[1-9]\d{0,3}\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
               value={formData.phone}
               options={[...autocompleteData.phones]}
               onChange={(value) => updateField('phone', value)}
-              onOptionSelect={(value) => updateField('phone', value)}
+              onOptionSelect={(value) => {
+                updateField('phone', value);
+                // if your AutocompleteInput delays calling onChange, force a second pass:
+                updateField('phone', value);
+              }}
+              onBlur={(e) => updateField('phone', e.target.value)}
               required
             />
 
@@ -425,6 +453,7 @@ export default function CandidateFormContainer({
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
+              
               </div>
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
