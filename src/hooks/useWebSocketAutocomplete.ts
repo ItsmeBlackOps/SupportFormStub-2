@@ -7,6 +7,13 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 5;
   const baseDelay = 1000;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Create audio element for notifications
+    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audioRef.current.volume = 0.5;
+  }, []);
 
   useEffect(() => {
     const handleCandidateSelected = (event: CustomEvent) => {
@@ -58,11 +65,15 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
       socketRef.current.on('subjectStatusUpdate', (data: { subject: string; status: string }) => {        
         try {
+          // Play notification sound
+          if (audioRef.current) {
+            audioRef.current.play().catch(err => console.error('Error playing sound:', err));
+          }
+
           const savedCandidates = localStorage.getItem('candidates');
           if (!savedCandidates) return;
 
           const candidates = JSON.parse(savedCandidates);
-          // console.log(candidates);
           
           const updatedCandidates = candidates.map((candidate: any) => {
             if (candidate.subject === data.subject) {
@@ -78,8 +89,17 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
 
           localStorage.setItem('candidates', JSON.stringify(updatedCandidates));
 
+          // Dispatch event for UI updates
           window.dispatchEvent(new CustomEvent('subjectStatusChanged', {
             detail: { subject: data.subject, status: data.status }
+          }));
+
+          // Show toast notification
+          window.dispatchEvent(new CustomEvent('showToast', {
+            detail: {
+              message: `Status updated to ${data.status} for ${data.subject}`,
+              type: 'info'
+            }
           }));
           
         } catch (error) {
