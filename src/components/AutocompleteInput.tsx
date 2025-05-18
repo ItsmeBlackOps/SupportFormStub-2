@@ -39,6 +39,7 @@ export function AutocompleteInput({
 
   useEffect(() => {
     if (id === 'name') {
+      console.log('Initializing socket for name input');
       socketRef.current = io('https://mongo.tunn.dev', {
         transports: ['websocket'],
         withCredentials: false,
@@ -48,7 +49,7 @@ export function AutocompleteInput({
       });
 
       socketRef.current.on('connect', () => {
-        console.log('Socket connected:', socketRef.current.id);
+        console.log('Socket connected for name input:', socketRef.current.id);
       });
 
       socketRef.current.on('search_response', (data: any[]) => {
@@ -59,6 +60,7 @@ export function AutocompleteInput({
 
       return () => {
         if (socketRef.current) {
+          console.log('Cleaning up name input socket');
           socketRef.current.disconnect();
         }
       };
@@ -90,7 +92,7 @@ export function AutocompleteInput({
             console.log('Sending search request:', newValue);
             socketRef.current.emit('search', { prefix: newValue });
           }
-        }, 150); // Debounce delay
+        }, 150);
       } else {
         setSearchResults([]);
         setIsLoading(false);
