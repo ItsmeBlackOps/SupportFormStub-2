@@ -8,6 +8,7 @@ interface AutocompleteInputProps {
   options: readonly string[];
   onChange: (value: string) => void;
   onOptionSelect: (option: string) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   required?: boolean;
   type?: 'text' | 'email' | 'tel';
   pattern?: string;
@@ -21,6 +22,7 @@ export function AutocompleteInput({
   options,
   onChange,
   onOptionSelect,
+  onBlur,
   required = false,
   type = 'text',
   pattern,
@@ -105,7 +107,8 @@ export function AutocompleteInput({
             email: selectedCandidate['Email ID'] || '',
             phone: selectedCandidate['Contact No'] || '',
             gender: selectedCandidate['Gender'] || '',
-            technology: selectedCandidate['Technology'] || ''
+            technology: selectedCandidate['Technology'] || '',
+            expert: selectedCandidate['Expert'] || 'No'
           }
         });
         window.dispatchEvent(event);
@@ -181,8 +184,9 @@ export function AutocompleteInput({
               setFocusedOptionIndex(0);
             }
           }}
-          onBlur={() => {
+          onBlur={(e) => {
             setTimeout(() => setShowDropdown(false), 150);
+            onBlur?.(e);
           }}
           onKeyDown={handleKeyDown}
           role="combobox"

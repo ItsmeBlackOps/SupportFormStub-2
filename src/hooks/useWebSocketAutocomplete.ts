@@ -11,13 +11,14 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
   useEffect(() => {
     // Listen for candidate selection events
     const handleCandidateSelected = (event: CustomEvent) => {
-      const { email, phone, gender, technology } = event.detail;
+      const { email, phone, gender, technology, expert } = event.detail;
       setFormData(prev => ({
         ...prev,
         email,
         phone,
         gender,
-        technology
+        technology,
+        expert: expert === 'Yes'
       }));
     };
 
