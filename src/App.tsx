@@ -26,7 +26,6 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
-  // Initialize WebSocket connection
   useWebSocketAutocomplete(setFormData);
 
   useEffect(() => {
@@ -57,12 +56,17 @@ export default function App() {
     const candidateToSave: Candidate = {
       id: editingCandidate?.id || crypto.randomUUID(),
       ...formData,
+      status: 'Pending',
       createdAt: editingCandidate?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    
+    console.log('Saving candidate with data:', candidateToSave);
+    
     const updatedList = editingCandidate
       ? candidates.map(c => c.id === editingCandidate.id ? candidateToSave : c)
       : [...candidates, candidateToSave];
+    
     saveCandidates(updatedList);
     setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);
