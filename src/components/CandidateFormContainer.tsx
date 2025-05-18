@@ -70,7 +70,7 @@ export default function CandidateFormContainer({
     
     // Format the number
     if (cleaned.length >= 11) { // +1 plus 10 digits
-      const match = cleaned.match(/^\+(\d{1})(\d{3})(\d{3})(\d{3})/);
+      const match = cleaned.match(/^\+(\d{1})(\d{3})(\d{3})(\d{4})/);
       if (match) {
         return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}`;
       }
@@ -255,7 +255,7 @@ export default function CandidateFormContainer({
               id="phone"
               label="Contact Number"
               type="tel"
-              pattern="^\+[1-9]\d{0,3}\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{3}$"
+              pattern="^\+[1-9]\d{0,3}\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
               value={formData.phone}
               options={[...autocompleteData.phones]}
               onChange={(value) => updateField('phone', value)}
