@@ -193,7 +193,7 @@ export default function CandidateTimeline({
                           {candidate.expert && (
                             <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
                               <Star className="h-3 w-3" />
-                              Expert
+                              {candidate.expert}
                             </span>
                           )}
                         </div>
