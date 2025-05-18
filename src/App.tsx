@@ -26,7 +26,6 @@ export default function App() {
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
 
-  // Initialize WebSocket connection
   useWebSocketAutocomplete(setFormData);
 
   useEffect(() => {
@@ -52,17 +51,40 @@ export default function App() {
     updateAutocompleteData(updated);
   };
 
+  const getSubjectTitle = (candidate: Candidate) => {
+    const name = candidate.name;
+    const tech = candidate.technology;
+    
+    switch (candidate.taskType) {
+      case 'interview':
+        return `Interview Support - ${name} - ${tech} - ${formatDateTime(candidate.interviewDateTime)}`;
+      case 'assessment':
+        return `Assessment Support - ${name} - ${tech} - ${formatDate(candidate.assessmentDeadline)}`;
+      case 'mock':
+        return `Mock Interview - ${name} - ${tech} - ${candidate.mockMode} - ${formatDateTime(candidate.availabilityDateTime)}`;
+      case 'resumeUnderstanding':
+        return `Resume Understanding - ${name} - ${tech} - ${formatDateTime(candidate.availabilityDateTime)}`;
+      case 'resumeReview':
+        return `Resume Making - ${name} - ${tech}`;
+      default:
+        return '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const candidateToSave: Candidate = {
       id: editingCandidate?.id || crypto.randomUUID(),
       ...formData,
+      subject: getSubjectTitle({ ...formData, id: '', createdAt: '', updatedAt: '' }),
       createdAt: editingCandidate?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    
     const updatedList = editingCandidate
       ? candidates.map(c => c.id === editingCandidate.id ? candidateToSave : c)
       : [...candidates, candidateToSave];
+    
     saveCandidates(updatedList);
     setSubmittedCandidate(candidateToSave);
     setShowSuccessModal(true);
