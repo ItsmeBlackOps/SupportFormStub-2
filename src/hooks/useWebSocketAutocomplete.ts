@@ -56,15 +56,13 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         setRetryCount(0);
       });
 
-      socketRef.current.on('subjectStatusUpdate', (data: { subject: string; status: string }) => {
-        console.log('Received status update:', data);
-        
+      socketRef.current.on('subjectStatusUpdate', (data: { subject: string; status: string }) => {        
         try {
           const savedCandidates = localStorage.getItem('candidates');
           if (!savedCandidates) return;
 
           const candidates = JSON.parse(savedCandidates);
-          console.log(candidates);
+          // console.log(candidates);
           
           const updatedCandidates = candidates.map((candidate: any) => {
             if (candidate.subject === data.subject) {
@@ -75,7 +73,6 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
                 updatedAt: new Date().toISOString()
               };
             }
-            console.log(candidate);
             return candidate;
           });
 
