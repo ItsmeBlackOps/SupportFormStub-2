@@ -61,10 +61,10 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         
         try {
           const savedCandidates = localStorage.getItem('candidates');
-          console.log(savedCandidates);
           if (!savedCandidates) return;
 
           const candidates = JSON.parse(savedCandidates);
+          console.log(candidates);
           
           const updatedCandidates = candidates.map((candidate: any) => {
             if (candidate.subject === data.subject) {
@@ -75,6 +75,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
                 updatedAt: new Date().toISOString()
               };
             }
+            console.log(candidate);
             return candidate;
           });
 
