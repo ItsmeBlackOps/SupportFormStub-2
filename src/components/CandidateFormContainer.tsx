@@ -56,34 +56,42 @@ export default function CandidateFormContainer({
   };
 
   const formatPhoneNumber = (value: string) => {
-  // strip everything except digits and +
-  let cleaned = value.replace(/[^\d+]/g, '');
+    console.log('Formatting phone number:', value);
+    // strip everything except digits and +
+    let cleaned = value.replace(/[^\d+]/g, '');
+    console.log('Cleaned:', cleaned);
 
-  // ensure there's a leading +
-  if (!cleaned.startsWith('+')) {
-    cleaned = '+' + cleaned;
-  }
+    // ensure there's a leading +
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    console.log('With +:', cleaned);
 
-  // drop the + for digit logic
-  const digits = cleaned.slice(1);
+    // drop the + for digit logic
+    const digits = cleaned.slice(1);
+    console.log('Digits:', digits);
 
-  // if we have at least 10 “local” digits, treat the last 10 as area+local,
-  // and everything before as the country code:
-  if (digits.length >= 10) {
-    const country = digits.slice(0, digits.length - 10);
-    const area    = digits.slice(-10, -7);
-    const prefix  = digits.slice(-7, -4);
-    const line    = digits.slice(-4);
+    // if we have at least 10 "local" digits, treat the last 10 as area+local,
+    // and everything before as the country code:
+    if (digits.length >= 10) {
+      const country = digits.slice(0, digits.length - 10);
+      const area    = digits.slice(-10, -7);
+      const prefix  = digits.slice(-7, -4);
+      const line    = digits.slice(-4);
 
-    return `+${country} (${area}) ${prefix}-${line}`;
-  }
+      const formatted = `+${country} (${area}) ${prefix}-${line}`;
+      console.log('Formatted:', formatted);
+      return formatted;
+    }
 
-  // fallback: just return what we cleaned
-  return cleaned;
-};
-
+    // fallback: just return what we cleaned
+    console.log('Fallback:', cleaned);
+    return cleaned;
+  };
 
   const updateField = (field: keyof FormData, value: any) => {
+    console.log('Updating field:', field, 'with value:', value);
+    
     // Apply capitalization to specific fields
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
       value = capitalizeWords(value);
@@ -102,7 +110,11 @@ export default function CandidateFormContainer({
       }));
     }
 
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      console.log('Updated form data:', updated);
+      return updated;
+    });
   };
   
   const handleTaskTypeChange = (taskType: string) => {
@@ -167,6 +179,7 @@ export default function CandidateFormContainer({
     
     // Only proceed if there are no errors
     if (Object.keys(finalErrors).length === 0) {
+      console.log('Submitting form with data:', formData);
       onSubmit(e);
     }
   };
@@ -256,20 +269,20 @@ export default function CandidateFormContainer({
             </div>
 
             <AutocompleteInput
-  id="phone"
-  label="Contact Number"
-  type="tel"
-  value={formData.phone}
-  options={[...autocompleteData.phones]}
-  onChange={(value) => updateField('phone', value)}
-  onOptionSelect={(value) => {
-    updateField('phone', value);
-    // if your AutocompleteInput delays calling onChange, force a second pass:
-    updateField('phone', value);
-  }}
-  onBlur={(e) => updateField('phone', e.target.value)}
-  required
-/>
+              id="phone"
+              label="Contact Number"
+              type="tel"
+              value={formData.phone}
+              options={[...autocompleteData.phones]}
+              onChange={(value) => updateField('phone', value)}
+              onOptionSelect={(value) => {
+                updateField('phone', value);
+                // if your AutocompleteInput delays calling onChange, force a second pass:
+                updateField('phone', value);
+              }}
+              onBlur={(e) => updateField('phone', e.target.value)}
+              required
+            />
 
             {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
               <div className="relative">
@@ -440,6 +453,7 @@ export default function CandidateFormContainer({
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
+              
               </div>
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">

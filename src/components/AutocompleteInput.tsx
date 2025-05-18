@@ -52,6 +52,7 @@ export function AutocompleteInput({
       });
 
       socketRef.current.on('search_response', (data: any[]) => {
+        console.log('Received search response:', data);
         setSearchResults(data);
         setIsLoading(false);
       });
@@ -86,6 +87,7 @@ export function AutocompleteInput({
         setIsLoading(true);
         debounceTimerRef.current = setTimeout(() => {
           if (socketRef.current?.connected) {
+            console.log('Sending search request:', newValue);
             socketRef.current.emit('search', { prefix: newValue });
           }
         }, 150); // Debounce delay
@@ -102,6 +104,7 @@ export function AutocompleteInput({
     if (id === 'name') {
       const selectedCandidate = searchResults.find(r => r['Candidate Name'] === option);
       if (selectedCandidate) {
+        console.log('Selected candidate data:', selectedCandidate);
         const event = new CustomEvent('candidateSelected', {
           detail: {
             email: selectedCandidate['Email ID'] || '',

@@ -12,14 +12,21 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
     // Listen for candidate selection events
     const handleCandidateSelected = (event: CustomEvent) => {
       const { email, phone, gender, technology, expert } = event.detail;
-      setFormData(prev => ({
-        ...prev,
-        email,
-        phone,
-        gender,
-        technology,
-        expert: expert === 'Yes'
-      }));
+      console.log('Received candidate data:', event.detail);
+      console.log('Expert status:', expert);
+      
+      setFormData(prev => {
+        const updated = {
+          ...prev,
+          email,
+          phone,
+          gender,
+          technology,
+          expert: expert === 'Yes'
+        };
+        console.log('Updated form data:', updated);
+        return updated;
+      });
     };
 
     window.addEventListener('candidateSelected', handleCandidateSelected as EventListener);
