@@ -256,16 +256,20 @@ export default function CandidateFormContainer({
             </div>
 
             <AutocompleteInput
-              id="phone"
-              label="Contact Number"
-              type="tel"
-              pattern="^\+[1-9]\d{0,3}\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-              value={formData.phone}
-              options={[...autocompleteData.phones]}
-              onChange={(value) => updateField('phone', value)}
-              onOptionSelect={(value) => updateField('phone', value)}
-              required
-            />
+  id="phone"
+  label="Contact Number"
+  type="tel"
+  value={formData.phone}
+  options={[...autocompleteData.phones]}
+  onChange={(value) => updateField('phone', value)}
+  onOptionSelect={(value) => {
+    updateField('phone', value);
+    // if your AutocompleteInput delays calling onChange, force a second pass:
+    updateField('phone', value);
+  }}
+  onBlur={(e) => updateField('phone', e.target.value)}
+  required
+/>
 
             {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
               <div className="relative">
