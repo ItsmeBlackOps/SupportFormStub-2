@@ -82,16 +82,6 @@ export default function CandidateFormContainer({
   return cleaned;
 };
 
-    // Format the number
-    if (cleaned.length >= 11) { // +1 plus 10 digits
-      const match = cleaned.match(/^\+(\d{1})(\d{3})(\d{3})(\d{4})/);
-      if (match) {
-        return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}`;
-      }
-    }
-    
-    return cleaned;
-  };
 
   const updateField = (field: keyof FormData, value: any) => {
     // Apply capitalization to specific fields
