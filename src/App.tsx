@@ -38,12 +38,40 @@ export default function App() {
         console.error('Failed to parse candidates:', err);
       }
     }
-  }, []);
+
+    // Listen for toast events
+    const handleToast = (event: CustomEvent) => {
+      const { message, type } = event.detail;
+      showToast(message, type);
+    };
+
+    window.addEventListener('showToast', handleToast as EventListener);
+    return () => window.removeEventListener('showToast', handleToast as EventListener);
+  }, [showToast]);
 
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
+
+  // Listen for status updates
+  useEffect(() => {
+    const handleStatusUpdate = (event: CustomEvent) => {
+      const { subject, status } = event.detail;
+      setCandidates(prev => 
+        prev.map(candidate => 
+          candidate.subject === subject
+            ? { ...candidate, status }
+            : candidate
+        )
+      );
+    };
+
+    window.addEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    return () => {
+      window.removeEventListener('subjectStatusChanged', handleStatusUpdate as EventListener);
+    };
+  }, []);
 
   const saveCandidates = (updated: Candidate[]) => {
     setCandidates(updated);
