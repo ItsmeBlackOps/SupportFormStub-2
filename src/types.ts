@@ -20,7 +20,7 @@ export interface FormData {
   technology: string;
   email: string;
   phone: string;
-  expert?: boolean;
+  expert?: string;
   
   // Fields for interview and assessment
   endClient?: string;
