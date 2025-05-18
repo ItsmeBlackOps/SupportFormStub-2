@@ -2,50 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { FormData } from '../types';
 
-const getTitle = (candidate: any) => {
-  const name = candidate.name;
-  const tech = candidate.technology;
-  const formatDateTime = (dt?: string) => {
-    if (!dt) return '';
-    const [datePart, timePart = '00:00'] = dt.split('T');
-    const [year, mo, da] = datePart.split('-').map(Number);
-    let [h, m] = timePart.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
-  };
-
-  const formatDate = (d?: string) => {
-    if (!d) return '';
-    const [year, month, day] = d.split('T')[0].split('-');
-    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${MONTHS[parseInt(month, 10)-1]} ${parseInt(day, 10)}, ${year}`;
-  };
-
-  switch (candidate.taskType) {
-    case 'interview':
-      return `Interview Support - ${name} - ${tech} - ${formatDateTime(candidate.interviewDateTime)}`;
-    case 'assessment':
-      return `Assessment Support - ${name} - ${tech} - ${formatDate(candidate.assessmentDeadline)}`;
-    case 'mock':
-      return `Mock Interview - ${name} - ${tech} - ${candidate.mockMode} - ${formatDateTime(candidate.availabilityDateTime)}`;
-    case 'resumeUnderstanding':
-      return `Resume Understanding - ${name} - ${tech} - ${formatDateTime(candidate.availabilityDateTime)}`;
-    case 'resumeReview':
-      return `Resume Making - ${name} - ${tech}`;
-    default:
-      return '';
-  }
-};
-
 export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) {
   const socketRef = useRef<Socket | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 5;
-  const baseDelay = 1000;
+  const baseDelay = 1000; // Start with 1 second delay
 
   useEffect(() => {
+    // Listen for candidate selection events
     const handleCandidateSelected = (event: CustomEvent) => {
       const { email, phone, gender, technology, expert } = event.detail;
       console.log('Candidate selected event:', event.detail);
@@ -58,7 +22,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
           phone,
           gender,
           technology,
-          expert: expert || 'No'
+          expert: expert || 'No' // Ensure we always have a value
         };
         console.log('Updated form data with expert:', updated);
         return updated;
@@ -76,10 +40,12 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
     try {
       console.log('Attempting to connect socket...');
       
+      // Disconnect existing socket if any
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
 
+      // Create Socket.IO connection with CORS configuration
       socketRef.current = io('https://mongo.tunn.dev', {
         transports: ['websocket', 'polling'],
         withCredentials: false,
@@ -90,15 +56,18 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         path: '/socket.io'
       });
 
+      // Connection opened
       socketRef.current.on('connect', () => {
         console.log('Socket connected successfully:', socketRef.current?.id);
-        setRetryCount(0);
+        setRetryCount(0); // Reset retry count on successful connection
       });
 
+      // Handle subject status updates
       socketRef.current.on('subjectStatusUpdate', (data: { subject: string; status: string }) => {
         console.log('Received subject status update:', data);
         
         try {
+          // Get current candidates from localStorage
           const savedCandidates = localStorage.getItem('candidates');
           if (!savedCandidates) {
             console.log('No candidates found in localStorage');
@@ -108,14 +77,9 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
           const candidates = JSON.parse(savedCandidates);
           console.log('Current candidates:', candidates);
           
+          // Update the status for matching candidates
           const updatedCandidates = candidates.map((candidate: any) => {
-            const candidateTitle = getTitle(candidate);
-            console.log('Comparing titles:', { 
-              received: data.subject, 
-              generated: candidateTitle 
-            });
-
-            if (candidateTitle === data.subject) {
+            if (candidate.technology === data.subject) {
               console.log('Updating status for candidate:', candidate.name);
               return {
                 ...candidate,
@@ -127,8 +91,11 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
           });
 
           console.log('Updated candidates:', updatedCandidates);
+
+          // Save back to localStorage
           localStorage.setItem('candidates', JSON.stringify(updatedCandidates));
 
+          // Dispatch a custom event to notify components
           const event = new CustomEvent('subjectStatusChanged', {
             detail: {
               subject: data.subject,
@@ -143,19 +110,23 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         }
       });
 
+      // Handle search responses
       socketRef.current.on('search_response', (data: any) => {
         console.log('Received search response:', data);
       });
 
+      // Handle disconnection
       socketRef.current.on('disconnect', () => {
         console.log('Socket disconnected');
       });
 
+      // Handle errors
       socketRef.current.on('error', (error) => {
         console.error('Socket error:', error);
         handleReconnect();
       });
 
+      // Handle connection errors
       socketRef.current.on('connect_error', (error) => {
         console.error('Connection error:', error);
         handleReconnect();
@@ -184,6 +155,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
   useEffect(() => {
     connectSocket();
 
+    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         console.log('Cleaning up socket connection');
