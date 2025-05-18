@@ -123,7 +123,7 @@ export default function CandidateFormContainer({
       remarks: '',
       duration: '60',
       screeningDone: false,
-      expert: formData.Expert,
+      expert: formData.expert,
     });
     setErrors({});
   };
