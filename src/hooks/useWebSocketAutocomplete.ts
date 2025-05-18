@@ -61,6 +61,7 @@ export function useWebSocketAutocomplete(setFormData: (data: FormData) => void) 
         
         try {
           const savedCandidates = localStorage.getItem('candidates');
+          console.log(savedCandidates);
           if (!savedCandidates) return;
 
           const candidates = JSON.parse(savedCandidates);
