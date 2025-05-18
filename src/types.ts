@@ -20,6 +20,7 @@ export interface FormData {
   technology: string;
   email: string;
   phone: string;
+  expert?: boolean;
   
   // Fields for interview and assessment
   endClient?: string;
@@ -40,4 +41,23 @@ export interface FormData {
   
   // Common optional field for remarks
   remarks?: string;
+}
+
+export interface Candidate extends FormData {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AutocompleteData {
+  names: Set<string>;
+  genders: Set<string>;
+  technologies: Set<string>;
+  emails: Set<string>;
+  phones: Set<string>;
+}
+
+export interface Action {
+  label: string;
+  onClick: () => void;
 }

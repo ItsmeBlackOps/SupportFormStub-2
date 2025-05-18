@@ -55,6 +55,30 @@ export default function CandidateFormContainer({
     return '';
   };
 
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters except + symbol
+    let cleaned = value.replace(/[^\d+]/g, '');
+    
+    // Handle country code
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('1')) {
+        cleaned = '+' + cleaned;
+      } else {
+        cleaned = '+1' + cleaned;
+      }
+    }
+    
+    // Format the number
+    if (cleaned.length >= 11) { // +1 plus 10 digits
+      const match = cleaned.match(/^\+(\d{1})(\d{3})(\d{3})(\d{4})/);
+      if (match) {
+        return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}`;
+      }
+    }
+    
+    return cleaned;
+  };
+
   const updateField = (field: keyof FormData, value: any) => {
     // Apply capitalization to specific fields
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
@@ -62,25 +86,7 @@ export default function CandidateFormContainer({
     }
 
     if (field === 'phone') {
-      // Remove all non-numeric characters except + symbol
-      let cleaned = value.replace(/[^\d+]/g, '');
-      
-      // Handle country code
-      if (cleaned.startsWith('+44')) {
-        // Convert +44 to +1 format
-        cleaned = '+1' + cleaned.slice(3);
-      } else if (!cleaned.startsWith('+')) {
-        // Add +1 if no country code
-        cleaned = '+1' + cleaned;
-      }
-      
-      // Format the number
-      if (cleaned.length >= 11) { // +1 plus 10 digits
-        const match = cleaned.match(/^\+1(\d{3})(\d{3})(\d{4})/);
-        if (match) {
-          value = `+1 (${match[1]}) ${match[2]}-${match[3]}`;
-        }
-      }
+      value = formatPhoneNumber(value);
     }
 
     // Validate fields that require validation
@@ -113,6 +119,7 @@ export default function CandidateFormContainer({
       remarks: '',
       duration: '60',
       screeningDone: false,
+      expert: formData.expert,
     });
     setErrors({});
   };

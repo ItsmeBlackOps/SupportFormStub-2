@@ -16,7 +16,8 @@ import {
   Search,
   Filter,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Star
 } from 'lucide-react';
 import { Candidate, TaskType } from '../types';
 import { TASK_TYPE_COLORS, TASK_TYPE_LABELS } from '../constants';
@@ -189,6 +190,12 @@ export default function CandidateTimeline({
                           <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
                             {candidate.technology}
                           </span>
+                          {candidate.expert && (
+                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+                              <Star className="h-3 w-3" />
+                              Expert
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex flex-wrap gap-3 text-xs text-gray-500">
