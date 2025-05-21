@@ -184,25 +184,6 @@ export default function CandidateFormContainer({
     }
   };
 
-  // Convert 24-hour time to 12-hour format
-  const convertTo12Hour = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const hours12 = hours % 12 || 12;
-    return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
-  };
-
-  // Convert 12-hour time to 24-hour format
-  const convertTo24Hour = (time12: string) => {
-    const [time, period] = time12.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
-    
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  };
-
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <form onSubmit={handleSubmit} className="p-6">
@@ -377,11 +358,7 @@ export default function CandidateFormContainer({
                   id="interviewDateTime"
                   value={formData.interviewDateTime || ''}
                   required
-                  onChange={(e) => {
-                    const [date, time] = e.target.value.split('T');
-                    const time12 = convertTo12Hour(time);
-                    updateField('interviewDateTime', `${date}T${time}`);
-                  }}
+                  onChange={(e) => updateField('interviewDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
@@ -471,15 +448,12 @@ export default function CandidateFormContainer({
                   id="availabilityDateTime"
                   value={formData.availabilityDateTime || ''}
                   required
-                  onChange={(e) => {
-                    const [date, time] = e.target.value.split('T');
-                    const time12 = convertTo12Hour(time);
-                    updateField('availabilityDateTime', `${date}T${time}`);
-                  }}
+                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
+              
               </div>
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
@@ -528,11 +502,7 @@ export default function CandidateFormContainer({
                   id="availabilityDateTime"
                   value={formData.availabilityDateTime || ''}
                   required
-                  onChange={(e) => {
-                    const [date, time] = e.target.value.split('T');
-                    const time12 = convertTo12Hour(time);
-                    updateField('availabilityDateTime', `${date}T${time}`);
-                  }}
+                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
