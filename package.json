@@ -8,11 +8,16 @@
     "@mui/material": "^5.15.2",
     "@mui/x-date-pickers": "^6.18.6",
     "dayjs": "^1.11.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-flatpickr": "^3.10.13",
     "flatpickr": "^4.6.13"
   },
   "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.0.2",
     "vite": "^5.0.0"
   }
 }
