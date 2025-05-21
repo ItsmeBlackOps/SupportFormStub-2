@@ -101,6 +101,23 @@ export default function CandidateFormContainer({
       value = formatPhoneNumber(value);
     }
 
+    // Handle datetime input conversion
+    if (field === 'interviewDateTime' && value) {
+      const [date, time] = value.split(' ');
+      const [dd, mm, yyyy] = date.split('-');
+      let [hours, minutes, period] = time.split(/[:\s]/);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours !== '12') {
+        hours = String(parseInt(hours) + 12);
+      } else if (period === 'AM' && hours === '12') {
+        hours = '00';
+      }
+      
+      // Create ISO string
+      value = `${yyyy}-${mm}-${dd}T${hours.padStart(2, '0')}:${minutes}`;
+    }
+
     // Validate fields that require validation
     if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
       const error = validateField(field, value);
@@ -149,6 +166,22 @@ export default function CandidateFormContainer({
       updateField('assessmentDeadline', deadline.toISOString().split('T')[0]);
     }
     updateField('screeningDone', checked);
+  };
+
+  const formatDateTimeForInput = (isoString?: string) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    if (hours > 12) hours -= 12;
+    if (hours === 0) hours = 12;
+    
+    return `${dd}-${mm}-${yyyy} ${String(hours).padStart(2, '0')}:${minutes} ${period}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -354,9 +387,10 @@ export default function CandidateFormContainer({
                   Interview Date &amp; Time (EDT)
                 </label>
                 <input
-                  type="datetime-local"
+                  type="text"
                   id="interviewDateTime"
-                  value={formData.interviewDateTime || ''}
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
+                  value={formatDateTimeForInput(formData.interviewDateTime)}
                   required
                   onChange={(e) => updateField('interviewDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
@@ -444,16 +478,16 @@ export default function CandidateFormContainer({
                   Availability (Date &amp; Time) (EDT)
                 </label>
                 <input
-                  type="datetime-local"
+                  type="text"
                   id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
+                  value={formatDateTimeForInput(formData.availabilityDateTime)}
                   required
                   onChange={(e) => updateField('availabilityDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
                 />
-              
               </div>
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
@@ -498,9 +532,10 @@ export default function CandidateFormContainer({
                   Availability (Date &amp; Time) (EDT)
                 </label>
                 <input
-                  type="datetime-local"
+                  type="text"
                   id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
+                  value={formatDateTimeForInput(formData.availabilityDateTime)}
                   required
                   onChange={(e) => updateField('availabilityDateTime', e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
