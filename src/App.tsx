@@ -157,9 +157,9 @@ export default function App() {
     if (!dt) return '';
     const [datePart, timePart = '00:00'] = dt.split('T');
     const [year, mo, da] = datePart.split('-').map(Number);
-    let [h, m] = timePart.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
+    const [h24, m] = timePart.split(':').map(Number);
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    const h = h24 % 12 || 12;
     return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
   };
 
