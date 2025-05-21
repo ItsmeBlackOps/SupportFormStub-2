@@ -67,30 +67,28 @@ export default function CandidateFormContainer({
   };
 
   const formatPhoneNumber = (value: string) => {
-    console.log('Formatting phone number:', value);
+    // Remove all non-digit characters except '+'
     let cleaned = value.replace(/[^\d+]/g, '');
-    console.log('Cleaned:', cleaned);
-
+    
+    // If no '+' prefix, check if it starts with '1'
     if (!cleaned.startsWith('+')) {
-      cleaned = '+' + cleaned;
+      // If it starts with '1', add '+', otherwise add '+1'
+      cleaned = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
     }
-    console.log('With +:', cleaned);
-
+    
+    // Get all digits after the '+'
     const digits = cleaned.slice(1);
-    console.log('Digits:', digits);
-
+    
+    // Format the number if we have enough digits
     if (digits.length >= 10) {
-      const country = digits.slice(0, digits.length - 10);
-      const area    = digits.slice(-10, -7);
-      const prefix  = digits.slice(-7, -4);
-      const line    = digits.slice(-4);
-
-      const formatted = `+${country} (${area}) ${prefix}-${line}`;
-      console.log('Formatted:', formatted);
-      return formatted;
+      const country = digits.slice(0, digits.length - 10) || '1'; // Use '1' if no country code
+      const area = digits.slice(-10, -7);
+      const prefix = digits.slice(-7, -4);
+      const line = digits.slice(-4);
+      
+      return `+${country} (${area}) ${prefix}-${line}`;
     }
-
-    console.log('Fallback:', cleaned);
+    
     return cleaned;
   };
 
@@ -119,8 +117,6 @@ export default function CandidateFormContainer({
   };
 
   const updateField = (field: keyof FormData, value: any) => {
-    console.log('Updating field:', field, 'with value:', value);
-    
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
       value = capitalizeWords(value);
     }
@@ -137,13 +133,9 @@ export default function CandidateFormContainer({
       }));
     }
 
-    setFormData(prev => {
-      const updated = { ...prev, [field]: value };
-      console.log('Updated form data:', updated);
-      return updated;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
-  
+
   const handleTaskTypeChange = (taskType: string) => {
     setFormData({
       name: formData.name,
@@ -182,7 +174,6 @@ export default function CandidateFormContainer({
     e.preventDefault();
     
     const newErrors: Record<string, string> = {};
-    
     newErrors.email = validateField('email', formData.email);
     newErrors.technology = validateField('technology', formData.technology);
     
@@ -201,7 +192,6 @@ export default function CandidateFormContainer({
     setErrors(finalErrors);
     
     if (Object.keys(finalErrors).length === 0) {
-      console.log('Submitting form with data:', formData);
       onSubmit(e);
     }
   };
@@ -298,10 +288,7 @@ export default function CandidateFormContainer({
                 value={formData.phone}
                 options={[...autocompleteData.phones]}
                 onChange={(value) => updateField('phone', value)}
-                onOptionSelect={(value) => {
-                  updateField('phone', value);
-                  updateField('phone', value);
-                }}
+                onOptionSelect={(value) => updateField('phone', value)}
                 onBlur={(e) => updateField('phone', e.target.value)}
                 required
               />
