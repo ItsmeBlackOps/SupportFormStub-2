@@ -4,8 +4,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
@@ -14,8 +12,6 @@ import { FormData, AutocompleteData } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
 
 // Initialize dayjs plugins
-dayjs.extend(utc);
-dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
 interface CandidateFormProps {
@@ -72,10 +68,9 @@ export default function CandidateFormContainer({
     // Remove all non-digit characters except '+'
     let cleaned = value.replace(/[^\d+]/g, '');
     
-    // If no '+' prefix, check if it starts with '1'
+    // If no '+' prefix, add '+1'
     if (!cleaned.startsWith('+')) {
-      // If it starts with '1', add '+', otherwise add '+1'
-      cleaned = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
+      cleaned = '+1' + cleaned;
     }
     
     // Get all digits after the '+'
@@ -83,7 +78,7 @@ export default function CandidateFormContainer({
     
     // Format the number if we have enough digits
     if (digits.length >= 10) {
-      const country = digits.slice(0, digits.length - 10) || '1'; // Use '1' if no country code
+      const country = digits.slice(0, digits.length - 10);
       const area = digits.slice(-10, -7);
       const prefix = digits.slice(-7, -4);
       const line = digits.slice(-4);
@@ -96,10 +91,9 @@ export default function CandidateFormContainer({
 
   const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: 'interviewDateTime' | 'availabilityDateTime') => {
     if (newValue) {
-      // Get the hour from the input time (without timezone conversion)
       const hour = newValue.hour();
       
-      // Show warning if outside business hours
+      // Check if time is outside business hours (9 AM - 6 PM)
       if (hour < 9 || hour >= 18) {
         const warning = "Warning: The selected time is outside of business hours (9 AM - 6 PM)";
         setTimeWarning(warning);
@@ -112,9 +106,12 @@ export default function CandidateFormContainer({
       } else {
         setTimeWarning(null);
       }
-      
-      // Store the exact time as entered
-      updateField(field, newValue.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'));
+
+      // Store the exact date and time without any timezone conversion
+      const formattedDateTime = newValue.format('YYYY-MM-DDTHH:mm:ss');
+      updateField(field, formattedDateTime);
+    } else {
+      updateField(field, '');
     }
   };
 
