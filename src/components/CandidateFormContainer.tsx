@@ -96,15 +96,12 @@ export default function CandidateFormContainer({
 
   const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: 'interviewDateTime' | 'availabilityDateTime') => {
     if (newValue) {
-      // Keep the time exactly as entered by user
-      const exactTime = newValue.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+      // Get the hour from the input time (without timezone conversion)
+      const hour = newValue.hour();
       
-      // Check business hours in EDT
-      const edtTime = newValue.tz('America/New_York');
-      const hour = edtTime.hour();
-      
+      // Show warning if outside business hours
       if (hour < 9 || hour >= 18) {
-        const warning = "Warning: The selected time is outside of business hours (9 AM - 6 PM EDT)";
+        const warning = "Warning: The selected time is outside of business hours (9 AM - 6 PM)";
         setTimeWarning(warning);
         window.dispatchEvent(new CustomEvent('showToast', {
           detail: {
@@ -116,7 +113,8 @@ export default function CandidateFormContainer({
         setTimeWarning(null);
       }
       
-      updateField(field, exactTime);
+      // Store the exact time as entered
+      updateField(field, newValue.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'));
     }
   };
 
