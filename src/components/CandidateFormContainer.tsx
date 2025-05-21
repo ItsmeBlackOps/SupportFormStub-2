@@ -3,6 +3,7 @@ import { Save } from 'lucide-react';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
+import { DateTimePicker } from './DateTimePicker';
 import { FormData, AutocompleteData } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
 
@@ -349,21 +350,13 @@ export default function CandidateFormContainer({
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="interviewDateTime" className="block text-sm font-medium text-gray-700">
-                  Interview Date &amp; Time (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="interviewDateTime"
-                  value={formData.interviewDateTime || ''}
-                  required
-                  onChange={(e) => updateField('interviewDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              </div>
+              <DateTimePicker
+                id="interviewDateTime"
+                label="Interview Date & Time (EDT)"
+                value={formData.interviewDateTime || ''}
+                onChange={(value) => updateField('interviewDateTime', value)}
+                required
+              />
 
               <div>
                 <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
@@ -439,22 +432,13 @@ export default function CandidateFormContainer({
 
           {formData.taskType === 'mock' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
-                  Availability (Date &amp; Time) (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              
-              </div>
+              <DateTimePicker
+                id="availabilityDateTime"
+                label="Availability (Date & Time) (EDT)"
+                value={formData.availabilityDateTime || ''}
+                onChange={(value) => updateField('availabilityDateTime', value)}
+                required
+              />
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
                   Mode
@@ -493,21 +477,13 @@ export default function CandidateFormContainer({
 
           {formData.taskType === 'resumeUnderstanding' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
-                  Availability (Date &amp; Time) (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              </div>
+              <DateTimePicker
+                id="availabilityDateTime"
+                label="Availability (Date & Time) (EDT)"
+                value={formData.availabilityDateTime || ''}
+                onChange={(value) => updateField('availabilityDateTime', value)}
+                required
+              />
               <div className="md:col-span-2">
                 <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
                   Remarks
