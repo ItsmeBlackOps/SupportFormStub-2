@@ -184,6 +184,75 @@ export default function CandidateFormContainer({
     }
   };
 
+  // Function to convert 24-hour time to 12-hour format with AM/PM
+  const convertTo12Hour = (time24: string) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // Function to convert 12-hour time to 24-hour format
+  const convertTo24Hour = (time12: string) => {
+    if (!time12) return '';
+    const [time, period] = time12.split(' ');
+    let [hours, minutes] = time.split(':');
+    let hour = parseInt(hours, 10);
+    
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    
+    return `${hour.toString().padStart(2, '0')}:${minutes}`;
+  };
+
+  // Custom datetime input component
+  const DateTimeInput = ({ value, onChange, required = false, label }: { 
+    value: string, 
+    onChange: (value: string) => void,
+    required?: boolean,
+    label: string 
+  }) => {
+    const [date, time] = value ? value.split('T') : ['', ''];
+    const time12 = time ? convertTo12Hour(time) : '';
+
+    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newTime12 = e.target.value;
+      const newTime24 = convertTo24Hour(newTime12);
+      onChange(`${date}T${newTime24}`);
+    };
+
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <div className="mt-1 flex gap-2">
+          <input
+            type="date"
+            value={date}
+            required={required}
+            onChange={(e) => onChange(`${e.target.value}T${time || '00:00'}`)}
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+              focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+              transition-colors duration-200"
+          />
+          <input
+            type="time"
+            value={time12}
+            required={required}
+            onChange={handleTimeChange}
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
+              focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+              transition-colors duration-200"
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <form onSubmit={handleSubmit} className="p-6">
@@ -349,21 +418,12 @@ export default function CandidateFormContainer({
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="interviewDateTime" className="block text-sm font-medium text-gray-700">
-                  Interview Date &amp; Time (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="interviewDateTime"
-                  value={formData.interviewDateTime || ''}
-                  required
-                  onChange={(e) => updateField('interviewDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              </div>
+              <DateTimeInput
+                label="Interview Date & Time (EDT)"
+                value={formData.interviewDateTime || ''}
+                onChange={(value) => updateField('interviewDateTime', value)}
+                required
+              />
 
               <div>
                 <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
@@ -439,22 +499,12 @@ export default function CandidateFormContainer({
 
           {formData.taskType === 'mock' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
-                  Availability (Date &amp; Time) (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              
-              </div>
+              <DateTimeInput
+                label="Availability (Date & Time) (EDT)"
+                value={formData.availabilityDateTime || ''}
+                onChange={(value) => updateField('availabilityDateTime', value)}
+                required
+              />
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
                   Mode
@@ -493,21 +543,12 @@ export default function CandidateFormContainer({
 
           {formData.taskType === 'resumeUnderstanding' && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
-                  Availability (Date &amp; Time) (EDT)
-                </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
-                    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                    transition-colors duration-200"
-                />
-              </div>
+              <DateTimeInput
+                label="Availability (Date & Time) (EDT)"
+                value={formData.availabilityDateTime || ''}
+                onChange={(value) => updateField('availabilityDateTime', value)}
+                required
+              />
               <div className="md:col-span-2">
                 <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
                   Remarks
