@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/themes/light.css';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
@@ -56,43 +58,23 @@ export default function CandidateFormContainer({
   };
 
   const formatPhoneNumber = (value: string) => {
-    console.log('Formatting phone number:', value);
-    // strip everything except digits and +
     let cleaned = value.replace(/[^\d+]/g, '');
-    console.log('Cleaned:', cleaned);
-
-    // ensure there's a leading +
     if (!cleaned.startsWith('+')) {
       cleaned = '+' + cleaned;
     }
-    console.log('With +:', cleaned);
-
-    // drop the + for digit logic
     const digits = cleaned.slice(1);
-    console.log('Digits:', digits);
-
-    // if we have at least 10 "local" digits, treat the last 10 as area+local,
-    // and everything before as the country code:
+    
     if (digits.length >= 10) {
       const country = digits.slice(0, digits.length - 10);
-      const area    = digits.slice(-10, -7);
-      const prefix  = digits.slice(-7, -4);
-      const line    = digits.slice(-4);
-
-      const formatted = `+${country} (${area}) ${prefix}-${line}`;
-      console.log('Formatted:', formatted);
-      return formatted;
+      const area = digits.slice(-10, -7);
+      const prefix = digits.slice(-7, -4);
+      const line = digits.slice(-4);
+      return `+${country} (${area}) ${prefix}-${line}`;
     }
-
-    // fallback: just return what we cleaned
-    console.log('Fallback:', cleaned);
     return cleaned;
   };
 
   const updateField = (field: keyof FormData, value: any) => {
-    console.log('Updating field:', field, 'with value:', value);
-    
-    // Apply capitalization to specific fields
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
       value = capitalizeWords(value);
     }
@@ -101,24 +83,6 @@ export default function CandidateFormContainer({
       value = formatPhoneNumber(value);
     }
 
-    // Handle datetime input conversion
-    if (field === 'interviewDateTime' && value) {
-      const [date, time] = value.split(' ');
-      const [dd, mm, yyyy] = date.split('-');
-      let [hours, minutes, period] = time.split(/[:\s]/);
-      
-      // Convert to 24-hour format
-      if (period === 'PM' && hours !== '12') {
-        hours = String(parseInt(hours) + 12);
-      } else if (period === 'AM' && hours === '12') {
-        hours = '00';
-      }
-      
-      // Create ISO string
-      value = `${yyyy}-${mm}-${dd}T${hours.padStart(2, '0')}:${minutes}`;
-    }
-
-    // Validate fields that require validation
     if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
       const error = validateField(field, value);
       setErrors(prev => ({
@@ -127,13 +91,9 @@ export default function CandidateFormContainer({
       }));
     }
 
-    setFormData(prev => {
-      const updated = { ...prev, [field]: value };
-      console.log('Updated form data:', updated);
-      return updated;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
-  
+
   const handleTaskTypeChange = (taskType: string) => {
     setFormData({
       name: formData.name,
@@ -168,33 +128,13 @@ export default function CandidateFormContainer({
     updateField('screeningDone', checked);
   };
 
-  const formatDateTimeForInput = (isoString?: string) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const period = hours >= 12 ? 'PM' : 'AM';
-    
-    if (hours > 12) hours -= 12;
-    if (hours === 0) hours = 12;
-    
-    return `${dd}-${mm}-${yyyy} ${String(hours).padStart(2, '0')}:${minutes} ${period}`;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all required fields before submission
     const newErrors: Record<string, string> = {};
-    
-    // Always validate email and technology
     newErrors.email = validateField('email', formData.email);
     newErrors.technology = validateField('technology', formData.technology);
     
-    // Validate conditional fields
     if (['interview', 'assessment', 'mock'].includes(formData.taskType) && formData.endClient) {
       newErrors.endClient = validateField('endClient', formData.endClient);
     }
@@ -203,18 +143,22 @@ export default function CandidateFormContainer({
       newErrors.jobTitle = validateField('jobTitle', formData.jobTitle);
     }
     
-    // Filter out empty error messages
     const finalErrors = Object.fromEntries(
       Object.entries(newErrors).filter(([_, value]) => value !== '')
     );
     
     setErrors(finalErrors);
     
-    // Only proceed if there are no errors
     if (Object.keys(finalErrors).length === 0) {
-      console.log('Submitting form with data:', formData);
       onSubmit(e);
     }
+  };
+
+  const dateTimeOptions = {
+    enableTime: true,
+    dateFormat: "d-m-Y h:i K",
+    time_24hr: false,
+    minuteIncrement: 1
   };
 
   return (
@@ -308,11 +252,7 @@ export default function CandidateFormContainer({
               value={formData.phone}
               options={[...autocompleteData.phones]}
               onChange={(value) => updateField('phone', value)}
-              onOptionSelect={(value) => {
-                updateField('phone', value);
-                // if your AutocompleteInput delays calling onChange, force a second pass:
-                updateField('phone', value);
-              }}
+              onOptionSelect={(value) => updateField('phone', value)}
               onBlur={(e) => updateField('phone', e.target.value)}
               required
             />
@@ -386,16 +326,14 @@ export default function CandidateFormContainer({
                 <label htmlFor="interviewDateTime" className="block text-sm font-medium text-gray-700">
                   Interview Date &amp; Time (EDT)
                 </label>
-                <input
-                  type="text"
-                  id="interviewDateTime"
-                  placeholder="DD-MM-YYYY HH:MM AM/PM"
-                  value={formatDateTimeForInput(formData.interviewDateTime)}
-                  required
-                  onChange={(e) => updateField('interviewDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.interviewDateTime}
+                  onChange={([date]) => updateField('interviewDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
                 />
               </div>
 
@@ -477,16 +415,14 @@ export default function CandidateFormContainer({
                 <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
                   Availability (Date &amp; Time) (EDT)
                 </label>
-                <input
-                  type="text"
-                  id="availabilityDateTime"
-                  placeholder="DD-MM-YYYY HH:MM AM/PM"
-                  value={formatDateTimeForInput(formData.availabilityDateTime)}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.availabilityDateTime}
+                  onChange={([date]) => updateField('availabilityDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
                 />
               </div>
               <div>
@@ -531,16 +467,14 @@ export default function CandidateFormContainer({
                 <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
                   Availability (Date &amp; Time) (EDT)
                 </label>
-                <input
-                  type="text"
-                  id="availabilityDateTime"
-                  placeholder="DD-MM-YYYY HH:MM AM/PM"
-                  value={formatDateTimeForInput(formData.availabilityDateTime)}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.availabilityDateTime}
+                  onChange={([date]) => updateField('availabilityDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="DD-MM-YYYY HH:MM AM/PM"
                 />
               </div>
               <div className="md:col-span-2">
