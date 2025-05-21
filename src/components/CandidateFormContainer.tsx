@@ -101,20 +101,6 @@ export default function CandidateFormContainer({
       value = formatPhoneNumber(value);
     }
 
-    // Convert datetime value to 12-hour format if it's a datetime field
-    if (field === 'interviewDateTime' || field === 'availabilityDateTime') {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12;
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        const formattedDate = value.split('T')[0];
-        value = `${formattedDate}T${formattedHours.toString().padStart(2, '0')}:${formattedMinutes}`;
-      }
-    }
-
     // Validate fields that require validation
     if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
       const error = validateField(field, value);
