@@ -1,6 +1,12 @@
 {
+  "scripts": {
+    "dev": "vite"
+  },
   "dependencies": {
     "react-flatpickr": "^3.10.13",
     "flatpickr": "^4.6.13"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }
