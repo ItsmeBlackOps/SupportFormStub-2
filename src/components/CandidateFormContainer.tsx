@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Save, AlertTriangle } from 'lucide-react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
 import { FormData, AutocompleteData } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
+
+// Initialize dayjs plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface CandidateFormProps {
   formData: FormData;
@@ -26,6 +32,7 @@ export default function CandidateFormContainer({
   isEditing
 }: CandidateFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
 
   const capitalizeWords = (str: string) => {
     return str.split(' ')
@@ -61,22 +68,17 @@ export default function CandidateFormContainer({
 
   const formatPhoneNumber = (value: string) => {
     console.log('Formatting phone number:', value);
-    // strip everything except digits and +
     let cleaned = value.replace(/[^\d+]/g, '');
     console.log('Cleaned:', cleaned);
 
-    // ensure there's a leading +
     if (!cleaned.startsWith('+')) {
       cleaned = '+' + cleaned;
     }
     console.log('With +:', cleaned);
 
-    // drop the + for digit logic
     const digits = cleaned.slice(1);
     console.log('Digits:', digits);
 
-    // if we have at least 10 "local" digits, treat the last 10 as area+local,
-    // and everything before as the country code:
     if (digits.length >= 10) {
       const country = digits.slice(0, digits.length - 10);
       const area    = digits.slice(-10, -7);
@@ -88,15 +90,37 @@ export default function CandidateFormContainer({
       return formatted;
     }
 
-    // fallback: just return what we cleaned
     console.log('Fallback:', cleaned);
     return cleaned;
+  };
+
+  const isBusinessHours = (date: dayjs.Dayjs): boolean => {
+    const nyTime = date.tz('America/New_York');
+    const hour = nyTime.hour();
+    return hour >= 9 && hour < 18;
+  };
+
+  const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: 'interviewDateTime' | 'availabilityDateTime') => {
+    if (newValue) {
+      if (!isBusinessHours(newValue)) {
+        const warning = "Warning: The selected time is outside of business hours (9 AM - 6 PM EDT)";
+        setTimeWarning(warning);
+        window.dispatchEvent(new CustomEvent('showToast', {
+          detail: {
+            message: warning,
+            type: 'warning'
+          }
+        }));
+      } else {
+        setTimeWarning(null);
+      }
+      updateField(field, newValue.toISOString());
+    }
   };
 
   const updateField = (field: keyof FormData, value: any) => {
     console.log('Updating field:', field, 'with value:', value);
     
-    // Apply capitalization to specific fields
     if (['technology', 'endClient', 'jobTitle'].includes(field)) {
       value = capitalizeWords(value);
     }
@@ -105,7 +129,6 @@ export default function CandidateFormContainer({
       value = formatPhoneNumber(value);
     }
 
-    // Validate fields that require validation
     if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
       const error = validateField(field, value);
       setErrors(prev => ({
@@ -158,14 +181,11 @@ export default function CandidateFormContainer({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all required fields before submission
     const newErrors: Record<string, string> = {};
     
-    // Always validate email and technology
     newErrors.email = validateField('email', formData.email);
     newErrors.technology = validateField('technology', formData.technology);
     
-    // Validate conditional fields
     if (['interview', 'assessment', 'mock'].includes(formData.taskType) && formData.endClient) {
       newErrors.endClient = validateField('endClient', formData.endClient);
     }
@@ -174,14 +194,12 @@ export default function CandidateFormContainer({
       newErrors.jobTitle = validateField('jobTitle', formData.jobTitle);
     }
     
-    // Filter out empty error messages
     const finalErrors = Object.fromEntries(
       Object.entries(newErrors).filter(([_, value]) => value !== '')
     );
     
     setErrors(finalErrors);
     
-    // Only proceed if there are no errors
     if (Object.keys(finalErrors).length === 0) {
       console.log('Submitting form with data:', formData);
       onSubmit(e);
@@ -282,7 +300,6 @@ export default function CandidateFormContainer({
                 onChange={(value) => updateField('phone', value)}
                 onOptionSelect={(value) => {
                   updateField('phone', value);
-                  // if your AutocompleteInput delays calling onChange, force a second pass:
                   updateField('phone', value);
                 }}
                 onBlur={(e) => updateField('phone', e.target.value)}
@@ -365,11 +382,7 @@ export default function CandidateFormContainer({
                   </label>
                   <DateTimePicker
                     value={formData.interviewDateTime ? dayjs(formData.interviewDateTime) : null}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        updateField('interviewDateTime', newValue.toISOString());
-                      }
-                    }}
+                    onChange={(newValue) => handleDateTimeChange(newValue, 'interviewDateTime')}
                     format="MM/DD/YYYY hh:mm A"
                     className="mt-1 block w-full"
                     slotProps={{
@@ -379,6 +392,12 @@ export default function CandidateFormContainer({
                       }
                     }}
                   />
+                  {timeWarning && (
+                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <p className="text-sm">{timeWarning}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -461,11 +480,7 @@ export default function CandidateFormContainer({
                   </label>
                   <DateTimePicker
                     value={formData.availabilityDateTime ? dayjs(formData.availabilityDateTime) : null}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        updateField('availabilityDateTime', newValue.toISOString());
-                      }
-                    }}
+                    onChange={(newValue) => handleDateTimeChange(newValue, 'availabilityDateTime')}
                     format="MM/DD/YYYY hh:mm A"
                     className="mt-1 block w-full"
                     slotProps={{
@@ -475,6 +490,12 @@ export default function CandidateFormContainer({
                       }
                     }}
                   />
+                  {timeWarning && (
+                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <p className="text-sm">{timeWarning}</p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
@@ -520,11 +541,7 @@ export default function CandidateFormContainer({
                   </label>
                   <DateTimePicker
                     value={formData.availabilityDateTime ? dayjs(formData.availabilityDateTime) : null}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        updateField('availabilityDateTime', newValue.toISOString());
-                      }
-                    }}
+                    onChange={(newValue) => handleDateTimeChange(newValue, 'availabilityDateTime')}
                     format="MM/DD/YYYY hh:mm A"
                     className="mt-1 block w-full"
                     slotProps={{
@@ -534,6 +551,12 @@ export default function CandidateFormContainer({
                       }
                     }}
                   />
+                  {timeWarning && (
+                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <p className="text-sm">{timeWarning}</p>
+                    </div>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                   <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
