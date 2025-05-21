@@ -6,6 +6,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
@@ -15,6 +16,7 @@ import { TASK_TYPE_LABELS } from '../constants';
 // Initialize dayjs plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 interface CandidateFormProps {
   formData: FormData;
@@ -92,15 +94,16 @@ export default function CandidateFormContainer({
     return cleaned;
   };
 
-  const isBusinessHours = (date: dayjs.Dayjs): boolean => {
-    const nyTime = date.tz('America/New_York');
-    const hour = nyTime.hour();
-    return hour >= 9 && hour < 18;
-  };
-
   const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: 'interviewDateTime' | 'availabilityDateTime') => {
     if (newValue) {
-      if (!isBusinessHours(newValue)) {
+      // Keep the time exactly as entered by user
+      const exactTime = newValue.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+      
+      // Check business hours in EDT
+      const edtTime = newValue.tz('America/New_York');
+      const hour = edtTime.hour();
+      
+      if (hour < 9 || hour >= 18) {
         const warning = "Warning: The selected time is outside of business hours (9 AM - 6 PM EDT)";
         setTimeWarning(warning);
         window.dispatchEvent(new CustomEvent('showToast', {
@@ -112,7 +115,8 @@ export default function CandidateFormContainer({
       } else {
         setTimeWarning(null);
       }
-      updateField(field, newValue.toISOString());
+      
+      updateField(field, exactTime);
     }
   };
 
