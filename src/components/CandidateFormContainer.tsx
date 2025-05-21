@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/themes/light.css';
 import { AutocompleteInput } from './AutocompleteInput';
 import { FormSection } from './FormSection';
 import { TaskTypeSelector } from './TaskTypeSelector';
@@ -184,6 +186,13 @@ export default function CandidateFormContainer({
     }
   };
 
+  const dateTimeOptions = {
+    enableTime: true,
+    dateFormat: "MM/dd/yyyy hh:mm aa",
+    time_24hr: false,
+    minuteIncrement: 1
+  };
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <form onSubmit={handleSubmit} className="p-6">
@@ -353,15 +362,14 @@ export default function CandidateFormContainer({
                 <label htmlFor="interviewDateTime" className="block text-sm font-medium text-gray-700">
                   Interview Date &amp; Time (EDT)
                 </label>
-                <input
-                  type="datetime-local"
-                  id="interviewDateTime"
-                  value={formData.interviewDateTime || ''}
-                  required
-                  onChange={(e) => updateField('interviewDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.interviewDateTime}
+                  onChange={([date]) => updateField('interviewDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="MM/DD/YYYY HH:MM AM/PM"
                 />
               </div>
 
@@ -443,17 +451,15 @@ export default function CandidateFormContainer({
                 <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
                   Availability (Date &amp; Time) (EDT)
                 </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.availabilityDateTime}
+                  onChange={([date]) => updateField('availabilityDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="MM/DD/YYYY HH:MM AM/PM"
                 />
-              
               </div>
               <div>
                 <label htmlFor="mockMode" className="block text-sm font-medium text-gray-700">
@@ -497,15 +503,14 @@ export default function CandidateFormContainer({
                 <label htmlFor="availabilityDateTime" className="block text-sm font-medium text-gray-700">
                   Availability (Date &amp; Time) (EDT)
                 </label>
-                <input
-                  type="datetime-local"
-                  id="availabilityDateTime"
-                  value={formData.availabilityDateTime || ''}
-                  required
-                  onChange={(e) => updateField('availabilityDateTime', e.target.value)}
+                <Flatpickr
+                  value={formData.availabilityDateTime}
+                  onChange={([date]) => updateField('availabilityDateTime', date.toISOString())}
+                  options={dateTimeOptions}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm
                     focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                     transition-colors duration-200"
+                  placeholder="MM/DD/YYYY HH:MM AM/PM"
                 />
               </div>
               <div className="md:col-span-2">
