@@ -157,10 +157,12 @@ export default function App() {
     if (!dt) return '';
     const [datePart, timePart = '00:00'] = dt.split('T');
     const [year, mo, da] = datePart.split('-').map(Number);
-    let [h, m] = timePart.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
+    const date = new Date(`${datePart}T${timePart}`);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${MONTHS[mo-1]} ${da}, ${year} at ${formattedHours}:${String(minutes).padStart(2,'0')} ${ampm}`;
   };
 
   const formatDate = (d?: string) => {
