@@ -350,6 +350,11 @@ export default function CandidateFormContainer({
                     <option value="1st">1st Round</option>
                     <option value="2nd">2nd Round</option>
                     <option value="3rd">3rd Round</option>
+                    <option value="4th">4th Round</option>
+                    <option value="5th">5th Round</option>
+                    <option value="Technical">Technical Round</option>
+                    <option value="Coding">Coding Round</option>
+                    <option value="Loop">Loop Round</option>
                     <option value="Final">Final Round</option>
                   </select>
                 </div>
