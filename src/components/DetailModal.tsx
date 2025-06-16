@@ -174,6 +174,12 @@ export function DetailModal({
                     transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 pt-2 text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-md mx-6 mb-4">
+  <p>
+    <strong>Note:</strong> Do not edit anything in the body of the subject. Share the generated content as is. If you want to change anything, please do it in the form provided.
+  </p>
+</div>
+
             <div className="flex justify-between items-start">
               <div className="flex items-center space-x-2">
                 <button
