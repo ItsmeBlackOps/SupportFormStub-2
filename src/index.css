@@ -2,6 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Driver.js custom theme */
+.driverjs-theme .driver-popover {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  max-width: 420px !important;
+  min-width: 300px !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+}
+
+/* Main content wrapper */
+.driverjs-theme .driver-popover .driver-popover-wrapper {
+  padding: 1.5rem !important;
+}
+
+/* Header with title and close button */
+.driverjs-theme .driver-popover-title {
+  color: #111827 !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 1rem 0 !important;
+  padding-right: 2rem !important;
+  line-height: 1.4 !important;
+  position: relative !important;
+}
+
+/* Close button positioning */
+.driverjs-theme .driver-popover-close-btn {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  background: none !important;
+  border: none !important;
+  color: #6b7280 !important;
+  cursor: pointer !important;
+  font-size: 1.25rem !important;
+  font-weight: normal !important;
+  padding: 0.25rem !important;
+  margin: 0 !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  z-index: 10 !important;
+}
+
+.driverjs-theme .driver-popover-close-btn:hover {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+/* Description text */
+.driverjs-theme .driver-popover-description {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  margin: 0 0 1.5rem 0 !important;
+  padding: 0 !important;
+}
+
+/* Progress indicator */
+.driverjs-theme .driver-popover-progress-text {
+  color: #6366f1 !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  margin: 0 0 1rem 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+/* Navigation buttons container */
+.driverjs-theme .driver-popover-navigation-btns {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  margin: 1.5rem 0 0 0 !important;
+  padding: 1rem 0 0 0 !important;
+  border-top: 1px solid #f3f4f6 !important;
+}
+
+/* Progress text in footer */
+.driverjs-theme .driver-popover-navigation-btns .driver-popover-progress-text {
+  flex: 1 !important;
+  text-align: left !important;
+  margin: 0 !important;
+  color: #6366f1 !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+/* Navigation buttons */
+.driverjs-theme .driver-popover-next-btn,
+.driverjs-theme .driver-popover-prev-btn {
+  background-color: #6366f1 !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  transition: background-color 0.2s !important;
+  min-width: 80px !important;
+  margin: 0 !important;
+}
+
+.driverjs-theme .driver-popover-next-btn:hover {
+  background-color: #4f46e5 !important;
+}
+
+.driverjs-theme .driver-popover-prev-btn {
+  background-color: #6b7280 !important;
+}
+
+.driverjs-theme .driver-popover-prev-btn:hover {
+  background-color: #4b5563 !important;
+}
+
+/* Override any default driver.js styles */
+.driver-popover {
+  font-family: inherit !important;
+}
+
+.driver-popover * {
+  box-sizing: border-box !important;
+}
+
+.driver-highlighted-element {
+  z-index: 9999 !important;
+}
+
+/* Ensure proper content structure */
+.driverjs-theme .driver-popover-content {
+  padding: 1.5rem !important;
+  margin: 0 !important;
+}
+
+/* Make sure all elements have proper spacing */
+.driverjs-theme .driver-popover > * {
+  position: relative !important;
+}
+
+/* Fix any potential layout issues */
+.driverjs-theme .driver-popover-wrapper,
+.driverjs-theme .driver-popover-content {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 @layer base {
   html {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

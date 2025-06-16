@@ -6,7 +6,9 @@ import { DetailModal } from './components/DetailModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { TabNavigation } from './components/TabNavigation';
 import { EmptyState } from './components/EmptyState';
+import { TourButton } from './components/TourButton';
 import { useToast } from './hooks/useToast';
+import { useTour } from './hooks/useTour';
 import { useImagePaste } from './hooks/useImagePaste';
 import { useAutocompleteData } from './hooks/useAutocompleteData';
 import { useWebSocketAutocomplete } from './hooks/useWebSocketAutocomplete';
@@ -26,9 +28,22 @@ export default function App() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const { showToast, ToastContainer } = useToast();
   const { isAnalyzing, error: analysisError, handlePaste } = useImagePaste(setFormData);
+  const { startMainTour, hasCompletedTour } = useTour();
 
   useWebSocketAutocomplete(setFormData);
   useInterviewNotifications(candidates);
+
+  // Auto-start tour for new users
+  useEffect(() => {
+    const hasSeenTour = hasCompletedTour();
+    if (!hasSeenTour && candidates.length === 0) {
+      // Delay the tour start to ensure DOM is ready
+      const timer = setTimeout(() => {
+        startMainTour();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [startMainTour, hasCompletedTour, candidates.length]);
 
   useEffect(() => {
     const saved = localStorage.getItem('candidates');
@@ -157,7 +172,8 @@ export default function App() {
     if (!dt) return '';
     const [datePart, timePart = '00:00'] = dt.split('T');
     const [year, mo, da] = datePart.split('-').map(Number);
-    let [h, m] = timePart.split(':').map(Number);
+    let [h] = timePart.split(':').map(Number);
+    const [, m] = timePart.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     return `${MONTHS[mo-1]} ${da}, ${year} at ${h}:${String(m).padStart(2,'0')} ${ampm}`;
@@ -189,23 +205,27 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <TabNavigation
-          activeTab={activeTab}
-          onChange={setActiveTab}
-          tabs={[
-            {
-              id: 'new',
-              label: editingCandidate ? 'Edit Candidate' : 'Add Candidate',
-              icon: Plus
-            },
-            {
-              id: 'scheduled',
-              label: 'Scheduled',
-              icon: CalendarClock,
-              badge: candidates.length || undefined
-            }
-          ]}
-        />
+        <div className="flex justify-between items-center mb-4">
+          <TabNavigation
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            tabs={[
+              {
+                id: 'new',
+                label: editingCandidate ? 'Edit Candidate' : 'Add Candidate',
+                icon: Plus
+              },
+              {
+                id: 'scheduled',
+                label: 'Scheduled',
+                icon: CalendarClock,
+                badge: candidates.length || undefined,
+                'data-tour': 'scheduled-tab'
+              }
+            ]}
+          />
+          <TourButton variant="secondary" />
+        </div>
 
         <div className="mt-4 transition-all duration-200">
           {activeTab === 'new' ? (
