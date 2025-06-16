@@ -157,6 +157,38 @@
   box-sizing: border-box !important;
 }
 
+/* Styling for important tour messages */
+.driverjs-theme .driver-popover-description strong {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  background-color: #fef2f2 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  border: 1px solid #fecaca !important;
+}
+
+.driverjs-theme .driver-popover-description em {
+  color: #d97706 !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  background-color: #fffbeb !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  border: 1px solid #fed7aa !important;
+}
+
+/* Special styling for warning text */
+.driverjs-theme .driver-popover-description .warning {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  background-color: #fef2f2 !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 0.375rem !important;
+  border: 1px solid #fecaca !important;
+  display: inline-block !important;
+  margin: 0.25rem 0 !important;
+}
+
 @layer base {
   html {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

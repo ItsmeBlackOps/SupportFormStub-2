@@ -56,7 +56,7 @@ export const useTour = () => {
         element: '[data-tour="candidate-info"]',
         popover: {
           title: 'Candidate Information',
-          description: 'Fill in the candidate\'s basic information. All fields marked as required must be completed. The system will validate email format and other inputs automatically.',
+          description: '<strong>IMPORTANT:</strong> It is advised to use names suggested in the dropdown autofill. Click the autofill entry as it contains required default candidate data. Type names manually if they are not being suggested.',
           side: 'top'
         }
       },
@@ -80,7 +80,7 @@ export const useTour = () => {
         element: '[data-tour="dynamic-fields"]',
         popover: {
           title: 'Dynamic Form Fields',
-          description: 'Based on your task type selection, additional relevant fields will appear here. For interviews, you\'ll see date/time pickers with business hours validation.',
+          description: 'Based on your task type selection, additional relevant fields will appear here. <span class="warning">Do NOT change the date format provided by the form - use the picker as it is.</span>',
           side: 'top'
         }
       },
