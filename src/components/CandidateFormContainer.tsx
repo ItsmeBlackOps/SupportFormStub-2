@@ -6,9 +6,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { AutocompleteInput } from './AutocompleteInput';
-import { FormSection } from './FormSection';
-import { TaskTypeSelector } from './TaskTypeSelector';
-import { FormData, AutocompleteData } from '../types';
+import { FormData, AutocompleteData, TaskType } from '../types';
 import { TASK_TYPE_LABELS } from '../constants';
 
 // Initialize dayjs plugins
@@ -16,7 +14,7 @@ dayjs.extend(customParseFormat);
 
 interface CandidateFormProps {
   formData: FormData;
-  setFormData: (data: FormData) => void;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   autocompleteData: AutocompleteData;
   onSubmit: (e: React.FormEvent) => void;
   isEditing: boolean;
@@ -46,7 +44,7 @@ export default function CandidateFormContainer({
         }
         break;
       case 'technology':
-        if (!/^[a-zA-Z0-9\s\/.+#-]+$/.test(value)) {
+        if (!/^[a-zA-Z0-9\s/.+#-]+$/.test(value)) {
           return 'Technology can only contain letters, numbers, spaces, and basic punctuation';
         }
         break;
@@ -115,35 +113,39 @@ export default function CandidateFormContainer({
     }
   };
 
-  const updateField = (field: keyof FormData, value: any) => {
-    if (['technology', 'endClient', 'jobTitle'].includes(field)) {
-      value = capitalizeWords(value);
+  const updateField = (field: keyof FormData, value: string | boolean) => {
+    let processedValue: string | boolean = value;
+    
+    if (typeof value === 'string') {
+      if (['technology', 'endClient', 'jobTitle'].includes(field)) {
+        processedValue = capitalizeWords(value);
+      }
+
+      if (field === 'phone') {
+        processedValue = formatPhoneNumber(value);
+      }
+
+      if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
+        const error = validateField(field, value);
+        setErrors(prev => ({
+          ...prev,
+          [field]: error
+        }));
+      }
     }
 
-    if (field === 'phone') {
-      value = formatPhoneNumber(value);
-    }
-
-    if (['email', 'technology', 'endClient', 'jobTitle'].includes(field)) {
-      const error = validateField(field, value);
-      setErrors(prev => ({
-        ...prev,
-        [field]: error
-      }));
-    }
-
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: FormData) => ({ ...prev, [field]: processedValue }));
   };
 
   const handleTaskTypeChange = (taskType: string) => {
-    setFormData({
+    const newFormData: FormData = {
       name: formData.name,
       gender: formData.gender,
       technology: formData.technology,
       email: formData.email,
       phone: formData.phone,
       endClient: ['interview', 'assessment', 'mock'].includes(taskType) ? formData.endClient : '',
-      taskType: taskType as any,
+      taskType: taskType as TaskType,
       jobTitle: '',
       interviewRound: '',
       interviewDateTime: '',
@@ -154,7 +156,8 @@ export default function CandidateFormContainer({
       duration: '60',
       screeningDone: false,
       expert: formData.expert,
-    });
+    };
+    setFormData(newFormData);
     setErrors({});
   };
 
@@ -185,7 +188,7 @@ export default function CandidateFormContainer({
     }
     
     const finalErrors = Object.fromEntries(
-      Object.entries(newErrors).filter(([_, value]) => value !== '')
+      Object.entries(newErrors).filter(([, value]) => value !== '')
     );
     
     setErrors(finalErrors);
@@ -200,7 +203,7 @@ export default function CandidateFormContainer({
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-tour="task-type-selector">
               {(Object.keys(TASK_TYPE_LABELS) as Array<keyof typeof TASK_TYPE_LABELS>).map((type) => (
                 <button
                   key={type}
@@ -219,7 +222,7 @@ export default function CandidateFormContainer({
               ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2" data-tour="candidate-info">
               <AutocompleteInput
                 id="name"
                 label="Full Name"
@@ -249,7 +252,7 @@ export default function CandidateFormContainer({
                 </select>
               </div>
 
-              <div className="relative">
+              <div className="relative" data-tour="technology-field">
                 <AutocompleteInput
                   id="technology"
                   label="Technology / Skill"
@@ -280,17 +283,19 @@ export default function CandidateFormContainer({
                 )}
               </div>
 
-              <AutocompleteInput
-                id="phone"
-                label="Contact Number"
-                type="tel"
-                value={formData.phone}
-                options={[...autocompleteData.phones]}
-                onChange={(value) => updateField('phone', value)}
-                onOptionSelect={(value) => updateField('phone', value)}
-                onBlur={(e) => updateField('phone', e.target.value)}
-                required
-              />
+              <div data-tour="phone-field">
+                <AutocompleteInput
+                  id="phone"
+                  label="Contact Number"
+                  type="tel"
+                  value={formData.phone}
+                  options={[...autocompleteData.phones]}
+                  onChange={(value) => updateField('phone', value)}
+                  onOptionSelect={(value) => updateField('phone', value)}
+                  onBlur={(e) => updateField('phone', e.target.value)}
+                  required
+                />
+              </div>
 
               {['interview', 'assessment', 'mock'].includes(formData.taskType) && (
                 <div className="relative">
@@ -315,7 +320,7 @@ export default function CandidateFormContainer({
             </div>
 
             {formData.taskType === 'interview' && (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2" data-tour="dynamic-fields">
                 <div className="relative">
                   <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">
                     Job Title
@@ -362,7 +367,7 @@ export default function CandidateFormContainer({
                   </select>
                 </div>
 
-                <div>
+                <div data-tour="datetime-picker">
                   <label className="block text-sm font-medium text-gray-700">
                     Interview Date &amp; Time (EDT)
                   </label>
@@ -379,7 +384,7 @@ export default function CandidateFormContainer({
                     }}
                   />
                   {timeWarning && (
-                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                    <div className="mt-2 flex items-center gap-2 text-amber-600" data-tour="time-warning">
                       <AlertTriangle className="h-4 w-4" />
                       <p className="text-sm">{timeWarning}</p>
                     </div>
@@ -584,6 +589,7 @@ export default function CandidateFormContainer({
           <div className="mt-6">
             <button
               type="submit"
+              data-tour="submit-button"
               className="w-full flex justify-center items-center gap-2 rounded-md bg-indigo-600 px-4 py-2
                         text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none 
                         focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"

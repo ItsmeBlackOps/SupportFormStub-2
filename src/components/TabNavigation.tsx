@@ -1,5 +1,4 @@
-import React from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import { TabId } from '../types';
 
 interface Tab {
@@ -7,6 +6,7 @@ interface Tab {
   label: string;
   icon: LucideIcon;
   badge?: number;
+  'data-tour'?: string;
 }
 
 interface TabNavigationProps {
@@ -44,6 +44,7 @@ export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps)
               <button
                 key={tab.id}
                 onClick={() => onChange(tab.id)}
+                data-tour={tab['data-tour']}
                 className={`
                   group relative min-w-0 flex-1 overflow-hidden py-4 px-6 text-sm font-medium text-center 
                   transition-colors duration-200 ease-in-out
