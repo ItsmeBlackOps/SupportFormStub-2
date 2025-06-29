@@ -355,6 +355,7 @@ export default function CandidateFormContainer({
                   >
                     <option value="">Select Round</option>
                     <option value="Screening">Screening</option>
+                    <option value="On-Demand AI Interview">On Demand or AI Interviews</option>
                     <option value="1st">1st Round</option>
                     <option value="2nd">2nd Round</option>
                     <option value="3rd">3rd Round</option>
