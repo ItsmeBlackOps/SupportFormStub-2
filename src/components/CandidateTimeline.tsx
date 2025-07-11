@@ -218,8 +218,8 @@ export default function CandidateTimeline({
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-xl ${colors.bg} ${colors.text}`}>{getTaskTypeIcon(type)}</div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{TASK_TYPE_LABELS[type]}</h3>
-                      <p className="text-sm text-gray-600">{typeData.length} candidates</p>
+                      <h3 className="font-semibold text-white">{TASK_TYPE_LABELS[type]}</h3>
+                      <p className="text-sm text-white">{typeData.length} candidates</p>
                     </div>
                   </div>
                 </div>
