@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { Plus, CalendarClock } from "lucide-react"
 import CandidateFormContainer from "./components/CandidateFormContainer"
 import CandidateTimeline from "./components/CandidateTimeline"
+import PlacementForm from "./components/PlacementForm"
 import { DetailModal } from "./components/DetailModal"
 import { LoadingOverlay } from "./components/LoadingOverlay"
 import { TabNavigation } from "./components/TabNavigation"
@@ -263,7 +264,7 @@ export default function App() {
                 />
               </div>
             </div>
-          ) : (
+          ) : activeTab === "scheduled" ? (
             <div className="animate-in fade-in-50 duration-500">
               {candidates.length === 0 ? (
                 <div className="flex items-center justify-center min-h-[50vh]">
@@ -291,6 +292,10 @@ export default function App() {
                   />
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="animate-in fade-in-50 duration-500">
+              <PlacementForm />
             </div>
           )}
         </div>

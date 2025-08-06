@@ -1,6 +1,7 @@
 "use client"
 
 import type { LucideIcon } from "lucide-react"
+import { FileText } from "lucide-react"
 import type { TabId } from "../types"
 
 interface Tab {
@@ -18,6 +19,15 @@ interface TabNavigationProps {
 }
 
 export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps) {
+  const allTabs: Tab[] = [
+    ...tabs,
+    {
+      id: "placement",
+      label: "Placement Form",
+      icon: FileText,
+    },
+  ]
+
   return (
     <div className="w-full">
       {/* Mobile Select Dropdown */}
@@ -30,7 +40,7 @@ export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps)
             value={activeTab}
             onChange={(e) => onChange(e.target.value as TabId)}
           >
-            {tabs.map((tab) => (
+            {allTabs.map((tab) => (
               <option key={tab.id} value={tab.id} className="py-2 bg-gray-800 text-white">
                 {tab.label} {tab.badge ? `(${tab.badge})` : ""}
               </option>
@@ -48,7 +58,7 @@ export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps)
       <div className="hidden sm:block">
         <div className="bg-gray-800 rounded-2xl p-1.5 shadow-sm ring-1 ring-gray-700/50">
           <nav className="flex space-x-1" aria-label="Tabs">
-            {tabs.map((tab) => {
+            {allTabs.map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
 
@@ -93,7 +103,7 @@ export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps)
                       {tab.badge}
                     </span>
                   )}
-
+                  
                   {/* Active indicator glow effect */}
                   {isActive && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-50" />
