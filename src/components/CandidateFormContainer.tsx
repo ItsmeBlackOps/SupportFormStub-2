@@ -56,11 +56,6 @@ export default function CandidateFormContainer({
           return "Company name can only contain letters, numbers, spaces, and basic punctuation"
         }
         break
-      case "jobTitle":
-        if (value && !/^[a-zA-Z0-9\s&.,'-]+$/.test(value)) {
-          return "Job title can only contain letters, numbers, spaces, and basic punctuation"
-        }
-        break
     }
     return ""
   }
@@ -90,7 +85,7 @@ export default function CandidateFormContainer({
     return cleaned
   }
 
-  const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: "interviewDateTime" | "availabilityDateTime") => {
+  const handleDateTimeChange = (newValue: dayjs.Dayjs | null, field: "availabilityDateTime") => {
     if (newValue) {
       const hour = newValue.hour()
 
@@ -121,13 +116,13 @@ export default function CandidateFormContainer({
     let processedValue: string | boolean = value
 
     if (typeof value === "string") {
-      if (["technology", "endClient", "jobTitle"].includes(field)) {
+      if (["technology", "endClient"].includes(field)) {
         processedValue = capitalizeWords(value)
       }
       if (field === "phone") {
         processedValue = formatPhoneNumber(value)
       }
-      if (["email", "technology", "endClient", "jobTitle"].includes(field)) {
+      if (["email", "technology", "endClient"].includes(field)) {
         const error = validateField(field, value)
         setErrors((prev) => ({
           ...prev,
@@ -145,11 +140,8 @@ export default function CandidateFormContainer({
       technology: formData.technology,
       email: formData.email,
       phone: formData.phone,
-      endClient: ["interview", "assessment", "mock"].includes(taskType) ? formData.endClient : "",
+      endClient: ["assessment", "mock"].includes(taskType) ? formData.endClient : "",
       taskType: taskType as TaskType,
-      jobTitle: "",
-      interviewRound: "",
-      interviewDateTime: "",
       assessmentDeadline: "",
       availabilityDateTime: "",
       mockMode: undefined,
@@ -180,13 +172,10 @@ export default function CandidateFormContainer({
     newErrors.email = validateField("email", formData.email)
     newErrors.technology = validateField("technology", formData.technology)
 
-    if (["interview", "assessment", "mock"].includes(formData.taskType) && formData.endClient) {
+    if (["assessment", "mock"].includes(formData.taskType) && formData.endClient) {
       newErrors.endClient = validateField("endClient", formData.endClient)
     }
 
-    if (formData.taskType === "interview" && formData.jobTitle) {
-      newErrors.jobTitle = validateField("jobTitle", formData.jobTitle)
-    }
 
     const finalErrors = Object.fromEntries(Object.entries(newErrors).filter(([, value]) => value !== ""))
 
@@ -347,7 +336,7 @@ export default function CandidateFormContainer({
                     required
                   />
                 </div>
-                {["interview", "assessment", "mock"].includes(formData.taskType) && (
+                {["assessment", "mock"].includes(formData.taskType) && (
                   <div className="relative">
                     <label htmlFor="endClient" className="block text-xs font-medium text-gray-300 mb-1">
                       <div className="flex items-center gap-1">
@@ -374,111 +363,9 @@ export default function CandidateFormContainer({
               </div>
             </div>
 
-            {/* Interview Specific Fields */}
-            {formData.taskType === "interview" && (
-              <div className="space-y-3" data-tour="dynamic-fields">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3 w-3 text-gray-400" />
-                  <h3 className="text-xs font-medium text-white">Interview Details</h3>
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="relative">
-                    <label htmlFor="jobTitle" className="block text-xs font-medium text-gray-300 mb-1">
-                      Job Title
-                    </label>
-                    <input
-                      type="text"
-                      id="jobTitle"
-                      value={formData.jobTitle || ""}
-                      required
-                      onChange={(e) => updateField("jobTitle", e.target.value)}
-                      className="block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
-                    />
-                    {errors.jobTitle && (
-                      <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        {errors.jobTitle}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="interviewRound" className="block text-xs font-medium text-gray-300 mb-1">
-                      Interview Round
-                    </label>
-                    <select
-                      id="interviewRound"
-                      value={formData.interviewRound || ""}
-                      required
-                      onChange={(e) => updateField("interviewRound", e.target.value)}
-                      className="block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
-                    >
-                      <option value="">Select Round</option>
-                      <option value="Screening">Screening</option>
-                      <option value="On-Demand AI Interview">On Demand or AI Interviews</option>
-                      <option value="1st">1st Round</option>
-                      <option value="2nd">2nd Round</option>
-                      <option value="3rd">3rd Round</option>
-                      <option value="4th">4th Round</option>
-                      <option value="5th">5th Round</option>
-                      <option value="Technical">Technical Round</option>
-                      <option value="Coding">Coding Round</option>
-                      <option value="Loop">Loop Round</option>
-                      <option value="Final">Final Round</option>
-                    </select>
-                  </div>
-                  <div data-tour="datetime-picker">
-                    <label className="block text-xs font-medium text-gray-300 mb-1">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Interview Date & Time (EDT)
-                      </div>
-                    </label>
-                    <DateTimePicker
-                      value={formData.interviewDateTime ? dayjs(formData.interviewDateTime) : null}
-                      onChange={(newValue) => handleDateTimeChange(newValue, "interviewDateTime")}
-                      format="MM/DD/YYYY hh:mm A"
-                      className="w-full"
-                      slotProps={{
-                        textField: {
-                          required: true,
-                          size: "small",
-                          className:
-                            "w-full rounded-lg border-0 shadow-sm ring-1 ring-gray-600 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 [&_.MuiInputBase-root]:bg-gray-800 [&_.MuiInputBase-input]:text-white",
-                        },
-                      }}
-                    />
-                    {timeWarning && (
-                      <div
-                        className="mt-2 flex items-center gap-2 p-2 bg-amber-900/50 border border-amber-700 rounded-lg text-amber-300"
-                        data-tour="time-warning"
-                      >
-                        <AlertTriangle className="h-3 w-3 flex-shrink-0" />
-                        <p className="text-xs">{timeWarning}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="duration" className="block text-xs font-medium text-gray-300 mb-1">
-                      Duration (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      id="duration"
-                      value={formData.duration || ""}
-                      required
-                      min={15}
-                      max={180}
-                      onChange={(e) => updateField("duration", e.target.value)}
-                      className="block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Assessment Specific Fields */}
             {formData.taskType === "assessment" && (
-              <div className="space-y-3">
+              <div className="space-y-3" data-tour="dynamic-fields">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3 w-3 text-gray-400" />
                   <h3 className="text-xs font-medium text-white">Assessment Details</h3>
@@ -532,7 +419,7 @@ export default function CandidateFormContainer({
 
             {/* Mock Interview Fields */}
             {formData.taskType === "mock" && (
-              <div className="space-y-3">
+              <div className="space-y-3" data-tour="dynamic-fields">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3 w-3 text-gray-400" />
                   <h3 className="text-xs font-medium text-white">Mock Interview Details</h3>
@@ -601,7 +488,7 @@ export default function CandidateFormContainer({
 
             {/* Resume Understanding Fields */}
             {formData.taskType === "resumeUnderstanding" && (
-              <div className="space-y-3">
+              <div className="space-y-3" data-tour="dynamic-fields">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3 w-3 text-gray-400" />
                   <h3 className="text-xs font-medium text-white">Resume Understanding Details</h3>
@@ -654,7 +541,7 @@ export default function CandidateFormContainer({
 
             {/* Resume Review Fields */}
             {formData.taskType === "resumeReview" && (
-              <div className="space-y-3">
+              <div className="space-y-3" data-tour="dynamic-fields">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-3 w-3 text-gray-400" />
                   <h3 className="text-xs font-medium text-white">Resume Review Details</h3>

@@ -1,16 +1,13 @@
 import { FormData } from './types';
 
 export const INITIAL_FORM_DATA: FormData = {
-  taskType: 'interview',
+  taskType: 'assessment',
   name: '',
   gender: '',
   technology: '',
   email: '',
   phone: '',
   endClient: '',
-  jobTitle: '',
-  interviewRound: '',
-  interviewDateTime: '',
   assessmentDeadline: '',
   availabilityDateTime: '',
   mockMode: undefined,
@@ -20,13 +17,6 @@ export const INITIAL_FORM_DATA: FormData = {
 };
 
 export const TASK_TYPE_COLORS = {
-  interview: {
-    bg: 'bg-primary-100',
-    text: 'text-primary-800',
-    border: 'border-primary-200',
-    icon: 'text-primary-600',
-    hover: 'hover:bg-primary-50'
-  },
   assessment: {
     bg: 'bg-accent-100',
     text: 'text-accent-800',
@@ -58,7 +48,6 @@ export const TASK_TYPE_COLORS = {
 };
 
 export const TASK_TYPE_LABELS = {
-  interview: 'Interview Support',
   assessment: 'Assessment Support',
   mock: 'Mock Interview',
   resumeUnderstanding: 'Resume Understanding',

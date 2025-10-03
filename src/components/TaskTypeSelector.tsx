@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarRange, ClipboardCheck, UserCheck, FileText, FileEdit, Sparkles } from "lucide-react"
+import { ClipboardCheck, UserCheck, FileText, FileEdit, Sparkles } from "lucide-react"
 import type { TaskType } from "../types"
 import { TASK_TYPE_LABELS } from "../constants"
 
@@ -9,9 +9,7 @@ interface TaskTypeSelectorProps {
   onChange: (value: string) => void
 }
 
-const taskTypeIcons = {
-  interview: CalendarRange,
-  assessment: ClipboardCheck,
+const taskTypeIcons = {  assessment: ClipboardCheck,
   mock: UserCheck,
   resumeUnderstanding: FileText,
   resumeReview: FileEdit,
@@ -19,7 +17,7 @@ const taskTypeIcons = {
 
 export function TaskTypeSelector({ value, onChange }: TaskTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {(Object.keys(TASK_TYPE_LABELS) as TaskType[]).map((type) => {
         const Icon = taskTypeIcons[type]
         const isSelected = value === type

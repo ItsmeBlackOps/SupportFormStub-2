@@ -1,5 +1,4 @@
-export type TaskType = 
-  | 'interview'
+export type TaskType =
   | 'assessment'
   | 'mock'
   | 'resumeUnderstanding'
@@ -20,15 +19,10 @@ export interface FormData {
   status?: string;
   subject?: string;
   
-  // Fields for interview and assessment
+  // Fields for assessment
   endClient?: string;
   duration?: string;
-  
-  // Interview-specific fields
-  interviewRound?: string;
-  jobTitle?: string;
-  interviewDateTime?: string;
-  
+
   // Assessment-specific fields
   assessmentDeadline?: string;
   screeningDone?: boolean;

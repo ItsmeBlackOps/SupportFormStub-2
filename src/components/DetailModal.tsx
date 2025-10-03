@@ -30,8 +30,6 @@ export function DetailModal({
     const tech = candidate.technology;
 
     switch (candidate.taskType) {
-      case 'interview':
-        return `Interview Support - ${name} - ${tech} - ${formatDateTime(candidate.interviewDateTime)}`;
       case 'assessment':
         return `Assessment Support - ${name} - ${tech} - ${formatDate(candidate.assessmentDeadline)}`;
       case 'mock':
@@ -51,19 +49,11 @@ export function DetailModal({
     { label: 'Technology', value: candidate.technology },
   ];
 
-  if (['interview', 'assessment', 'mock'].includes(candidate.taskType)) {
+  if (['assessment', 'mock'].includes(candidate.taskType)) {
     rows.push({ label: 'End Client', value: candidate.endClient || '' });
   }
 
   switch (candidate.taskType) {
-    case 'interview':
-      rows.push(
-        { label: 'Job Title', value: candidate.jobTitle || '' },
-        { label: 'Interview Round', value: candidate.interviewRound || '' },
-        { label: 'Date and Time of Interview (EST)', value: formatDateTime(candidate.interviewDateTime) },
-        { label: 'Duration', value: `${candidate.duration} minutes` }
-      );
-      break;
     case 'assessment':
       rows.push(
         { label: 'Assessment Deadline', value: formatDate(candidate.assessmentDeadline) },

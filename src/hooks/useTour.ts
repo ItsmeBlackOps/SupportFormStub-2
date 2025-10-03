@@ -48,7 +48,7 @@ export const useTour = () => {
         element: '[data-tour="task-type-selector"]',
         popover: {
           title: 'Select Task Type',
-          description: 'Start by selecting the type of support needed: Interview Support, Assessment Support, Mock Interview, Resume Understanding, or Resume Making. Each type has specific requirements.',
+          description: 'Start by selecting the type of support needed: Assessment Support, Mock Interview, Resume Understanding, or Resume Making. Each type has specific requirements.',
           side: 'bottom'
         }
       },
@@ -80,7 +80,7 @@ export const useTour = () => {
         element: '[data-tour="dynamic-fields"]',
         popover: {
           title: 'Dynamic Form Fields',
-          description: 'Based on your task type selection, additional relevant fields will appear here. For interviews, you\'ll see date/time pickers with business hours validation.',
+          description: 'Based on your task type selection, additional relevant fields will appear here. Scheduling-based tasks include date/time pickers with business hours validation.',
           side: 'top'
         }
       },
@@ -113,7 +113,7 @@ export const useTour = () => {
         element: '[data-tour="datetime-picker"]',
         popover: {
           title: 'Business Hours Validation',
-          description: 'When selecting interview times, the system validates business hours (9 AM - 6 PM). You\'ll receive a warning for times outside these hours.',
+          description: 'When selecting session times, the system validates business hours (9 AM - 6 PM). You\'ll receive a warning for times outside these hours.',
           side: 'bottom'
         }
       },

@@ -15,9 +15,10 @@ import { useTour } from "./hooks/useTour"
 import { useImagePaste } from "./hooks/useImagePaste"
 import { useAutocompleteData } from "./hooks/useAutocompleteData"
 import { useWebSocketAutocomplete } from "./hooks/useWebSocketAutocomplete"
-import { useInterviewNotifications } from "./hooks/useInterviewNotifications"
-import type { FormData, Candidate, TabId } from "./types"
+import type { FormData, Candidate, TabId, TaskType } from "./types"
 import { INITIAL_FORM_DATA } from "./constants"
+
+const SUPPORTED_TASK_TYPES = new Set<TaskType>(["assessment", "mock", "resumeUnderstanding", "resumeReview"]);
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("new")
@@ -34,7 +35,6 @@ export default function App() {
   const { startMainTour, hasCompletedTour } = useTour()
 
   useWebSocketAutocomplete(setFormData)
-  useInterviewNotifications(candidates)
 
   useEffect(() => {
     const hasSeenTour = hasCompletedTour()
@@ -51,7 +51,17 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        setCandidates(Array.isArray(parsed) ? parsed : [])
+
+        if (Array.isArray(parsed)) {
+          const sanitized = parsed.filter(
+            (candidate: Candidate) => candidate && SUPPORTED_TASK_TYPES.has(candidate.taskType),
+          ) as Candidate[]
+
+          setCandidates(sanitized)
+          localStorage.setItem("candidates", JSON.stringify(sanitized))
+        } else {
+          setCandidates([])
+        }
       } catch (err) {
         console.error("Failed to parse candidates:", err)
       }
@@ -86,9 +96,11 @@ export default function App() {
   }, [])
 
   const saveCandidates = (updated: Candidate[]) => {
-    setCandidates(updated)
-    localStorage.setItem("candidates", JSON.stringify(updated))
-    updateAutocompleteData(updated)
+    const sanitized = updated.filter((candidate) => SUPPORTED_TASK_TYPES.has(candidate.taskType))
+
+    setCandidates(sanitized)
+    localStorage.setItem("candidates", JSON.stringify(sanitized))
+    updateAutocompleteData(sanitized)
   }
 
   const getSubjectTitle = (candidate: Candidate) => {
@@ -96,8 +108,6 @@ export default function App() {
     const tech = candidate.technology
 
     switch (candidate.taskType) {
-      case "interview":
-        return `Interview Support - ${name} - ${tech} - ${formatDateTime(candidate.interviewDateTime)}`
       case "assessment":
         return `Assessment Support - ${name} - ${tech} - ${formatDate(candidate.assessmentDeadline)}`
       case "mock":
@@ -181,8 +191,6 @@ export default function App() {
 
   const getModalTitle = (c: Candidate) => {
     switch (c.taskType) {
-      case "interview":
-        return `Interview Support — ${c.jobTitle || "Role"}`
       case "assessment":
         return `Assessment Support — Due ${formatDate(c.assessmentDeadline)}`
       case "mock":
@@ -270,7 +278,7 @@ export default function App() {
                 <div className="flex items-center justify-center min-h-[50vh]">
                   <EmptyState
                     title="No candidates scheduled"
-                    description="Add a new candidate to get started with your interview management"
+                    description="Add a new candidate to get started with your candidate management"
                     action={{
                       label: "Add Candidate",
                       onClick: () => setActiveTab("new"),

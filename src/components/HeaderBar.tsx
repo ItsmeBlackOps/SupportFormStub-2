@@ -12,7 +12,7 @@ export function HeaderBar() {
             </div>
             <div className="ml-4">
               <h1 className="text-2xl font-bold text-gray-900">Support Manager</h1>
-              <p className="text-sm text-gray-600 mt-0.5">Manage candidate interviews and assessments</p>
+              <p className="text-sm text-gray-600 mt-0.5">Manage candidate assessments and support requests</p>
             </div>
           </div>
 

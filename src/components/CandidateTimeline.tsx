@@ -8,7 +8,6 @@ import {
   Clock,
   Building2,
   FileText,
-  BriefcaseIcon,
   UserCheckIcon,
   ClipboardCheckIcon,
   Files,
@@ -84,7 +83,6 @@ export default function CandidateTimeline({
   })
 
   const candidatesByType: Record<TaskType, Candidate[]> = {
-    interview: [],
     assessment: [],
     mock: [],
     resumeUnderstanding: [],
@@ -100,10 +98,7 @@ export default function CandidateTimeline({
     candidatesByType[taskType].sort((a, b) => {
       let dateA, dateB
 
-      if (taskType === "interview") {
-        dateA = a.interviewDateTime ? new Date(a.interviewDateTime) : new Date(0)
-        dateB = b.interviewDateTime ? new Date(b.interviewDateTime) : new Date(0)
-      } else if (taskType === "assessment") {
+      if (taskType === "assessment") {
         dateA = a.assessmentDeadline ? new Date(a.assessmentDeadline) : new Date(0)
         dateB = b.assessmentDeadline ? new Date(b.assessmentDeadline) : new Date(0)
       } else if (["mock", "resumeUnderstanding"].includes(taskType)) {
@@ -120,8 +115,6 @@ export default function CandidateTimeline({
 
   const getTaskTypeIcon = (type: TaskType) => {
     switch (type) {
-      case "interview":
-        return <BriefcaseIcon className="h-5 w-5" />
       case "assessment":
         return <ClipboardCheckIcon className="h-5 w-5" />
       case "mock":
@@ -252,21 +245,6 @@ export default function CandidateTimeline({
                         </div>
 
                         <div className="flex flex-wrap gap-4 text-xs text-gray-600 mb-3">
-                          {candidate.taskType === "interview" && (
-                            <>
-                              <span className="flex items-center gap-1.5">
-                                <Calendar className="h-3 w-3" />
-                                {formatDateTime(candidate.interviewDateTime)}
-                              </span>
-                              {candidate.jobTitle && (
-                                <span className="flex items-center gap-1.5">
-                                  <BriefcaseIcon className="h-3 w-3" />
-                                  {candidate.jobTitle}
-                                </span>
-                              )}
-                            </>
-                          )}
-
                           {candidate.taskType === "assessment" && (
                             <>
                               <span className="flex items-center gap-1.5">
